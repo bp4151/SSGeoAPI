@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeoAPI", "GeoAPI.csproj", "{611DEFFE-6FC4-4149-98BB-9223B55ADF81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoTest", "..\MongoTest\MongoTest\MongoTest.csproj", "{9D619361-6F30-46DF-B78B-6678F2889B2A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{611DEFFE-6FC4-4149-98BB-9223B55ADF81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{611DEFFE-6FC4-4149-98BB-9223B55ADF81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{611DEFFE-6FC4-4149-98BB-9223B55ADF81}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{611DEFFE-6FC4-4149-98BB-9223B55ADF81}.Debug|x86.Build.0 = Debug|Any CPU
+		{611DEFFE-6FC4-4149-98BB-9223B55ADF81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{611DEFFE-6FC4-4149-98BB-9223B55ADF81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{611DEFFE-6FC4-4149-98BB-9223B55ADF81}.Release|x86.ActiveCfg = Release|Any CPU
+		{611DEFFE-6FC4-4149-98BB-9223B55ADF81}.Release|x86.Build.0 = Release|Any CPU
+		{9D619361-6F30-46DF-B78B-6678F2889B2A}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{9D619361-6F30-46DF-B78B-6678F2889B2A}.Debug|Any CPU.Build.0 = Debug|x86
+		{9D619361-6F30-46DF-B78B-6678F2889B2A}.Debug|x86.ActiveCfg = Debug|x86
+		{9D619361-6F30-46DF-B78B-6678F2889B2A}.Debug|x86.Build.0 = Debug|x86
+		{9D619361-6F30-46DF-B78B-6678F2889B2A}.Release|Any CPU.ActiveCfg = Release|x86
+		{9D619361-6F30-46DF-B78B-6678F2889B2A}.Release|Any CPU.Build.0 = Release|x86
+		{9D619361-6F30-46DF-B78B-6678F2889B2A}.Release|x86.ActiveCfg = Release|x86
+		{9D619361-6F30-46DF-B78B-6678F2889B2A}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = GeoAPI.csproj
+	EndGlobalSection
+EndGlobal
