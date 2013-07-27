@@ -117,7 +117,7 @@ namespace GeoAPI
 			}
 
 			var query = Query.EQ ("_id", request.Id);
-			var update = Update.Set ("loc", request.loc).Set ("name", request.name).Set ("radius", request.radius);
+			var update = Update.Set ("loc", BsonValue.Create (request.loc)).Set ("name", BsonValue.Create (request.name)).Set ("radius", BsonValue.Create (request.radius));
 
 			FindAndModifyResult result = placescollection.FindAndModify (query, SortBy.Null, update);
 

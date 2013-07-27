@@ -63,7 +63,7 @@ namespace GeoAPI
 			//if ENTER, then run enter trigger where placeID = placeID and type = ENTER
 			//if EXIT, then run exit trigger where placeID = placeID and type = EXIT
 
-			foreach (DictionaryEntry de in dictPlaces) {
+			foreach (KeyValuePair<ObjectId, string> de in dictPlaces) {
 				RunTrigger (de.Key, de.Value);
 			}
 
@@ -100,8 +100,8 @@ namespace GeoAPI
 				//Get all locations inside place for user by createdate desc
 				var locsinsideplace = locationscollection.Find (icquery).Where (u => u.user_id == request.user_id).OrderByDescending (l => l.create_date);
 
-				List<Location> listlocs = locs.ToList ();
-				List<Location> listlocsinsideplace = locsinsideplace.ToList ();
+				List<LocationRequest> listlocs = locs.ToList ();
+				List<LocationRequest> listlocsinsideplace = locsinsideplace.ToList ();
 
 				//If the list of locations inside the place has a count of 1, then the user is new to the place
 				if (listlocsinsideplace.Count == 1) {

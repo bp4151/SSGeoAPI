@@ -17,6 +17,7 @@ using ServiceStack.ServiceInterface.Cors;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.Api.Swagger;
 
 namespace GeoAPI
 {
@@ -24,7 +25,7 @@ namespace GeoAPI
 	{
 		
 
-		public class AppHost : AppHostHttpListenerBase
+		public class AppHost : AppHostBase
 		{
 			//Tell Service Stack the name of your application and where to find your web services
 			public AppHost () : base("GeoAPI Web Services", typeof(TestService).Assembly)
@@ -37,7 +38,10 @@ namespace GeoAPI
 				//register any dependencies your services use, e.g:
 				//container.Register<ICacheClient>(new MemoryCacheClient());
 
+				Plugins.Add (new SwaggerFeature ());
+
 				Routes.Add<LocationRequest> ("/Location/Update/", "POST");
+
 				this.PreRequestFilters.Add ((req, resp) => {
 
 				});
