@@ -7,6 +7,20 @@ using MongoDB.Driver.GeoJsonObjectModel;
 
 namespace GeoAPI
 {
+	public class Place
+	{
+		[BsonId]
+		public ObjectId Id { get; set; }
+
+		public string name { get; set; }
+
+		public GeoJson2DGeographicCoordinates loc { get; set; }
+
+		public int radius { get; set; }
+
+		public List<string> usersInPlace { get; set; }
+	}
+
 	[Route("/place/create/", "POST")]
 	[Route("/place/update/{Id}", "PUT")]
 	public class PlaceCreateUpdateRequest
@@ -16,7 +30,9 @@ namespace GeoAPI
 
 		public string name { get; set; }
 
-		public GeoJson2DGeographicCoordinates loc { get; set; }
+		public double latitude { get; set; }
+
+		public double longitude { get; set; }
 
 		public int radius { get; set; }
 	}
@@ -29,9 +45,10 @@ namespace GeoAPI
 	[Route("/place/info/{Id}", "GET")]
 	public class PlaceRequest
 	{
+		public ObjectId Id { get; set; }
 	}
 
-	[Route("/place/delete/{Id}", "POST")]
+	[Route("/place/delete/{Id}", "DELETE")]
 	public class PlaceDeleteRequest
 	{
 		[BsonId]

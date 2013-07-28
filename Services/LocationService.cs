@@ -10,12 +10,33 @@ using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 using MongoDB.Driver.Builders;
 using System.Linq;
+using MongoDB.Driver.GeoJsonObjectModel;
 
 namespace GeoAPI
 {
 	public class LocationService : Service
 	{
 		AppSettings appSettings = new AppSettings ();
+		private int locationLimit = 0;
+		private MongoClient client = null;
+		private MongoServer server = null;
+		MongoDatabase db = null;
+		MongoCollection<LocationRequest> locationscollection = null;
+
+		public LocationService ()
+		{
+			var connectionString = appSettings.Get ("MongoDB", "");
+			locationLimit = appSettings.Get ("LocationLimit", 0);
+			client = new MongoClient (connectionString);
+			server = client.GetServer ();
+			db = server.GetDatabase ("geoapi");
+			//Get locations
+			locationscollection = db.GetCollection<LocationRequest> ("location");
+
+			if (!BsonClassMap.IsClassMapRegistered (typeof(LocationRequest))) {
+				BsonClassMap.RegisterClassMap<LocationRequest> ();
+			}
+		}
 
 		/// <summary>
 		/// Post the user's location.
@@ -31,20 +52,13 @@ namespace GeoAPI
 		public LocationResponse Post (LocationRequest request)
 		{
 
-			string connectionString = appSettings.Get ("MongoDB", "");
-			int locationLimit = appSettings.Get ("LocationLimit", 0);
-			MongoClient client = new MongoClient (connectionString);
-			MongoServer server = client.GetServer ();
-			MongoDatabase db = server.GetDatabase ("geoapi");
-			//Get locations
-			MongoCollection<LocationRequest> locationscollection = db.GetCollection<LocationRequest> ("location");
-
-			if (!BsonClassMap.IsClassMapRegistered (typeof(LocationRequest))) {
-				BsonClassMap.RegisterClassMap<LocationRequest> ();
-			}
+			Location location = new Location ();
+			location.user_id = request.user_id;
+			location.create_date = request.create_date;
+			location.loc = new GeoJson2DGeographicCoordinates (request.longitude, request.latitude);
 
 			//Insert the location into the locations collection
-			locationscollection.Insert (request);
+			locationscollection.Insert (location);
 
 			//if we have a locationLimit from the appSettings, then each time we insert for a user, remove all but the limit from the collection;
 			if (locationLimit > 0) {
@@ -64,7 +78,7 @@ namespace GeoAPI
 			//if EXIT, then run exit trigger where placeID = placeID and type = EXIT
 
 			foreach (KeyValuePair<ObjectId, string> de in dictPlaces) {
-				RunTrigger (de.Key, de.Value);
+				//RunTrigger (de.Key, de.Value);
 			}
 
 			LocationResponse response = new LocationResponse ();
@@ -76,32 +90,26 @@ namespace GeoAPI
 
 		Dictionary<ObjectId, string> GetPlacesByLocation (LocationRequest request)
 		{
-
-			string connectionString = appSettings.Get ("MongoDB", "");
-			MongoClient client = new MongoClient (connectionString);
-			MongoServer server = client.GetServer ();
-			MongoDatabase db = server.GetDatabase ("geoapi");
-
 			var earthRadius = 6378.0; // km
 
 			Dictionary<ObjectId, string> dictPlaces = new Dictionary<ObjectId, string> ();
 
 			//Get places
 			MongoCollection<PlaceResponse> placescollection = db.GetCollection<PlaceResponse> ("place");
-			MongoCollection<LocationRequest> locationscollection = db.GetCollection<LocationRequest> ("location");
+			MongoCollection<Location> locationscollection = db.GetCollection<Location> ("location");
 
-			placescollection.EnsureIndex (IndexKeys.GeoSpatialSpherical ("Loc"));
+			placescollection.EnsureIndex (IndexKeys.GeoSpatialSpherical ("loc"));
 
 			foreach (PlaceResponse place in placescollection.FindAll ()) {
-				var icquery = Query.WithinCircle ("Loc", place.loc.Longitude, place.loc.Latitude, place.radius / earthRadius, true);
+				var icquery = Query.WithinCircle ("loc", place.loc.Longitude, place.loc.Latitude, place.radius / earthRadius, true);
 
 				//Get all locations for user by createdate desc
 				var locs = locationscollection.FindAll ().Where (u => u.user_id == request.user_id).OrderByDescending (l => l.create_date);
 				//Get all locations inside place for user by createdate desc
-				var locsinsideplace = locationscollection.Find (icquery).Where (u => u.user_id == request.user_id).OrderByDescending (l => l.create_date);
+				var locsinsideplace = locationscollection.Find (icquery).Where (l => l.user_id == request.user_id).OrderByDescending (l => l.create_date);
 
-				List<LocationRequest> listlocs = locs.ToList ();
-				List<LocationRequest> listlocsinsideplace = locsinsideplace.ToList ();
+				List<Location> listlocs = locs.ToList ();
+				List<Location> listlocsinsideplace = locsinsideplace.ToList ();
 
 				//If the list of locations inside the place has a count of 1, then the user is new to the place
 				if (listlocsinsideplace.Count == 1) {
@@ -129,15 +137,14 @@ namespace GeoAPI
 			return dictPlaces;
 
 		}
-
-		void RunTrigger (ObjectId place_id, string triggerType)
-		{
-			string connectionString = appSettings.Get ("MongoDB", "");
-			MongoClient client = new MongoClient (connectionString);
-			MongoServer server = client.GetServer ();
-			MongoDatabase db = server.GetDatabase ("geoapi");
-
-		}
+		//		void RunTrigger (ObjectId place_id, string triggerType)
+		//		{
+		//			string connectionString = appSettings.Get ("MongoDB", "");
+		//			MongoClient client = new MongoClient (connectionString);
+		//			MongoServer server = client.GetServer ();
+		//			MongoDatabase db = server.GetDatabase ("geoapi");
+		//
+		//		}
 	}
 }
 

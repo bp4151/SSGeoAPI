@@ -21,19 +21,6 @@ namespace GeoAPI
 
 		public string user_id { get; set; }
 
-		public Location location { get; set; }
-	}
-	//Private Classes
-	public class Location
-	{
-		public Position position { get; set; }
-
-		public String type { get; set; }
-	}
-
-	public class Position
-	{
-
 		public double latitude { get; set; }
 
 		public double longitude { get; set; }
@@ -46,5 +33,32 @@ namespace GeoAPI
 
 		public int vertical_accuracy { get; set; }
 	}
+	//	//Private Classes
+	public class Location
+	{
+		public ObjectId Id { get; set; }
+
+		public DateTime create_date { get; set; }
+
+		public string user_id { get; set; }
+
+		public GeoJson2DGeographicCoordinates loc { get; set; }
+	}
+	//
+	//	public class Position
+	//	{
+	//
+	//		public double latitude { get; set; }
+	//
+	//		public double longitude { get; set; }
+	//
+	//		public int speed { get; set; }
+	//
+	//		public int altitude { get; set; }
+	//
+	//		public int horizontal_accuracy { get; set; }
+	//
+	//		public int vertical_accuracy { get; set; }
+	//	}
 }
 

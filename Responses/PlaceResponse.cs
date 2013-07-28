@@ -19,6 +19,8 @@ namespace GeoAPI
 		public int radius { get; set; }
 
 		public List<string> usersInPlace { get; set; }
+
+		public ResponseStatus responseStatus { get; set; }
 	}
 
 	public class PlaceCreateResponse

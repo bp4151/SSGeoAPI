@@ -42,6 +42,10 @@ namespace GeoAPI
 
 				Routes.Add<LocationRequest> ("/Location/Update/", "POST");
 
+				SetConfig (new EndpointHostConfig { 
+					DebugMode = true 
+				});
+
 				this.PreRequestFilters.Add ((req, resp) => {
 
 				});
