@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using ServiceStack.Text;
 using ServiceStack.ServiceInterface.ServiceModel;
 using MongoDB.Driver.Builders;
+using MongoDB.Bson;
 
 namespace GeoAPI
 {
@@ -38,13 +39,15 @@ namespace GeoAPI
 			TriggerListResponse response = new TriggerListResponse ();
 
 			response.triggers = new List<TriggerResponse> ();
+			var triggers = triggerscollection.FindAll ();
 
 			try {
-				foreach (var trigger in triggerscollection.FindAll ()) {
+
+				foreach (var trigger in triggers) {
 					Console.WriteLine (JsonSerializer.SerializeToString (trigger));
 					TriggerResponse triggerresponse = new TriggerResponse ();
 					triggerresponse.Id = trigger.Id;
-					triggerresponse.placeID = trigger.placeID;
+					triggerresponse.placeId = trigger.placeId;
 					triggerresponse.dateFrom = trigger.dateFrom;
 					triggerresponse.dateTo = trigger.dateTo;
 					triggerresponse.delay = trigger.delay;
@@ -101,7 +104,7 @@ namespace GeoAPI
 			response.delay = request.delay;
 			response.extra = request.extra;
 			response.perUserRunCount = request.perUserRunCount;
-			response.placeID = request.placeId;
+			response.placeId = request.placeId;
 			response.text = request.text;
 			response.timeFrom = request.timeFrom;
 			response.timeTo = request.timeTo;
@@ -127,12 +130,12 @@ namespace GeoAPI
 		{
 			TriggerResponse response = new TriggerResponse ();
 
-			var query = Query.EQ ("_id", request.Id);
+			var query = Query.EQ ("_id", new BsonObjectId (request.Id));
 
 			//var trigger = triggerscollection.FindOneAs<TriggerResponse> (query);
 
 			response.Id = request.Id;
-			response.placeID = request.placeId;
+			response.placeId = request.placeId;
 			response.dateFrom = request.dateFrom;
 			response.dateTo = request.dateTo;
 			response.delay = request.delay;
@@ -144,7 +147,18 @@ namespace GeoAPI
 			response.type = request.type;
 
 			var update = Update.Replace (response);
-			FindAndModifyResult result = triggerscollection.FindAndModify (query, SortBy.Null, update);
+//			var update = Update
+//				.Set ("placeId", request.placeId)
+//				.Set ("dateFrom", request.dateFrom)
+//				.Set ("dateTo", request.dateTo)
+//				.Set ("delay", request.delay)
+//		      	.SetWrapped ("extra", request.extra)
+//				.Set ("perUserRunCount", request.perUserRunCount)
+//				.Set ("text", request.text)
+//				.Set ("timeFrom", request.timeFrom)
+//				.Set ("timeTo", request.timeTo)
+//				.Set ("type", request.type);
+			FindAndModifyResult result = triggerscollection.FindAndModify (query, SortBy.Null, update, true);
 
 			response.responseStatus = new ResponseStatus ();
 

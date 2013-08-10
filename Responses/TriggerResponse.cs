@@ -19,7 +19,7 @@ namespace GeoAPI
 	{
 		public ObjectId Id { get; set; }
 
-		public ObjectId placeID { get; set; }
+		public ObjectId placeId { get; set; }
 
 		public string text { get; set; }
 

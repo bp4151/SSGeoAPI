@@ -11,6 +11,7 @@ using ServiceStack.Text;
 using MongoDB.Driver.Builders;
 using System.Linq;
 using MongoDB.Driver.GeoJsonObjectModel;
+using System.Text;
 
 namespace GeoAPI
 {
@@ -152,10 +153,12 @@ namespace GeoAPI
 					idxPriorLocation = listlocsinsideplace.FindIndex (l => l.Id == listlocs [1].Id);
 					Console.WriteLine ("idxPriorLocation: " + idxPriorLocation);
 				}
+
 				//if idxCurrentLocation = -1 and idxPriorLocation = -1 location not in place
 				if (idxCurrentLocation == -1 && idxPriorLocation == -1) {
 					Console.WriteLine ("Not in place");
 				}
+
 				//if idxCurrentLocation = 0 and idxPriorLocation = -1 ENTER
 				else if (idxCurrentLocation == 0 && idxPriorLocation == -1) {
 					dictPlaces.Add (place.Id, "ENTER");
@@ -163,7 +166,9 @@ namespace GeoAPI
 					place.usersInPlace.AddIfNotExists (request.user_id);
 					placescollection.Save (place);
 					Console.WriteLine ("Execute ENTER trigger");
-				} 
+					RunTrigger (place.Id, place.usersInPlace, "ENTER");
+				}
+
 				//if idxCurrentLocation = -1 and idxPriorLocation = 0 EXIT
 				else if (idxCurrentLocation == -1 && idxPriorLocation == 0) {
 					dictPlaces.Add (place.Id, "EXIT");
@@ -171,56 +176,60 @@ namespace GeoAPI
 					place.usersInPlace.Remove (request.user_id);
 					placescollection.Save (place);
 					Console.WriteLine ("Execute EXIT trigger");
+					List<string> userlist = new List<string> ();
+					userlist.Add (request.user_id);
+					RunTrigger (place.Id, userlist, "EXIT");
 				}
+
 				//if idxCurrentLocation = 0 and idxPriorLocation >= 0 STILL IN PLACE
 				else if (idxCurrentLocation == 0 && idxPriorLocation >= 0) {
 					Console.WriteLine ("Still in place");
 				}
-
-
-
-				/*
-				//If the list of locations inside the place has a count > 1, and the id of the location inside the place is the most current, and the second location is not inside the place, then the user has entered the place
-				if (listlocsinsideplace.Count >= 1 && listlocs.Count > 1 && listlocs [0].Id == listlocsinsideplace [0].Id && listlocs [1].Id == listlocsinsideplace [0].Id) {
-					dictPlaces.Add (place.Id, "ENTER");
-					//If an enter trigger exists on the place, fire the trigger and add the user to the place
-					place.usersInPlace.AddIfNotExists (request.user_id);
-					placescollection.Save (place);
-					Console.WriteLine ("Execute ENTER trigger");
-				}
-				//If the list of locations inside the place has a count > 1, and the id of the location inside the place is the second location, and the first location is not inside the place, then the user has left the place
-				else if (listlocsinsideplace.Count >= 1 && listlocs.Count > 1 && listlocs [1].Id == listlocsinsideplace [0].Id && listlocs [0].Id != listlocsinsideplace [0].Id) {
-					dictPlaces.Add (place.Id, "EXIT");
-					//If an exit trigger exists on the place, fire the trigger and remove the user to the place
-					place.usersInPlace.Remove (request.user_id);
-					placescollection.Save (place);
-					Console.WriteLine ("Execute EXIT trigger");
-				} 
-				//If the list of locations inside the place has a count of 1, then the user is new to the place
-				else if (listlocsinsideplace.Count == 1) {
-					dictPlaces.Add (place.Id, "ENTER");
-					//If an enter trigger exists on the place, fire the trigger and add the user to the place
-					place.usersInPlace.AddIfNotExists (request.user_id);
-					placescollection.Save (place);
-					Console.WriteLine ("Execute ENTER trigger");
-				} else {
-					Console.WriteLine ("Still in place");
-				}
-				*/
-
 			}
 
 			return dictPlaces;
 
 		}
-		//		void RunTrigger (ObjectId place_id, string triggerType)
-		//		{
-		//			string connectionString = appSettings.Get ("MongoDB", "");
-		//			MongoClient client = new MongoClient (connectionString);
-		//			MongoServer server = client.GetServer ();
-		//			MongoDatabase db = server.GetDatabase ("geoapi");
-		//
-		//		}
+
+		void RunTrigger (ObjectId place_id, List<string> usersInPlace, string triggerType)
+		{
+
+			var appHost = this.GetAppHost ();
+			var plugin = (ACSPushFeature)appHost.Plugins.Find (x => x is ACSPushFeature);
+
+			string connectionString = appSettings.Get ("MongoDB", "");
+			MongoClient client = new MongoClient (connectionString);
+			MongoServer server = client.GetServer ();
+			MongoDatabase db = server.GetDatabase ("geoapi");
+
+			MongoCollection<TriggerResponse> triggerscollection = db.GetCollection<TriggerResponse> ("trigger");
+
+			if (!BsonClassMap.IsClassMapRegistered (typeof(TriggerResponse))) {
+				BsonClassMap.RegisterClassMap<TriggerResponse> ();
+			}
+
+			try {
+				//Get all triggers for this place
+				var triggerquery = Query.And (
+					Query.EQ ("placeId", place_id),
+					Query.EQ ("type", triggerType)
+				);
+				List<TriggerResponse> triggersonplace = triggerscollection.Find (triggerquery).ToList ();
+
+				StringBuilder sb = new StringBuilder ();
+				for (int i = 0; i < usersInPlace.Count; i++) {
+					sb.Append (usersInPlace [0] + ",");
+				}
+				string userlist = sb.ToString ();
+				userlist = userlist.Substring (0, userlist.Length - 1);
+
+				for (int i = 0; i < triggersonplace.Count; i++) {
+					plugin.Notify ("BAIRFINDER-DEFAULT", userlist, triggersonplace [i].text);
+				}
+			} catch (Exception ex) {
+
+			}
+		}
 	}
 }
 

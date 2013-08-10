@@ -37,10 +37,10 @@ namespace GeoAPI
 			{
 				//register any dependencies your services use, e.g:
 				//container.Register<ICacheClient>(new MemoryCacheClient());
+				var appSettings = new AppSettings ();
 
 				Plugins.Add (new SwaggerFeature ());
-
-				Routes.Add<LocationRequest> ("/Location/Update/", "POST");
+				Plugins.Add (new ACSPushFeature ());
 
 				SetConfig (new EndpointHostConfig { 
 					DebugMode = true 
@@ -51,13 +51,14 @@ namespace GeoAPI
 				});
 
 				this.RequestFilters.Add ((IHttpRequest httpReq, IHttpResponse httpResp, object requestDto) => {
-					var appSettings = new AppSettings ();
 
 					if (httpReq.Headers ["Authorization-API"] == null) {
 						throw HttpError.Unauthorized ("No Authorization Header provided");
 					}
 
+					//ServiceStack instance API Key
 					string storedAPIKey = appSettings.Get ("GeoAPIKey", "");
+					//API Key passed from client
 					string passedAPIKey = httpReq.Headers ["Authorization-API"];
 
 					if (String.IsNullOrEmpty (storedAPIKey)) {

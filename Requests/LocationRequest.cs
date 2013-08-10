@@ -13,6 +13,7 @@ namespace GeoAPI
 		public List<LocationRequest> locations { get; set; }
 	}
 
+	[Route ("/Location/Update/", "POST")]
 	public class LocationRequest
 	{
 		public ObjectId Id { get; set; }

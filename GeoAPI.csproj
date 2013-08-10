@@ -118,6 +118,10 @@
     <Compile Include="Requests\TriggerRequest.cs" />
     <Compile Include="Responses\TriggerResponse.cs" />
     <Compile Include="Services\TriggerService.cs" />
+    <Compile Include="Plugins\PushFeature.cs" />
+    <Compile Include="Requests\PushRequest.cs" />
+    <Compile Include="Responses\PushResponse.cs" />
+    <Compile Include="Services\PushService.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
@@ -132,10 +136,12 @@
     <Folder Include="Requests\" />
     <Folder Include="Responses\" />
     <Folder Include="Services\" />
+    <Folder Include="Plugins\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="GeoloqiRequests.txt" />
     <None Include="GeoloqiResponses.txt" />
     <None Include="Program.txt" />
+    <None Include="web.config.template" />
   </ItemGroup>
 </Project>
