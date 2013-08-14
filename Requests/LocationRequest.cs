@@ -44,6 +44,8 @@ namespace GeoAPI
 		public string user_id { get; set; }
 
 		public GeoJson2DGeographicCoordinates loc { get; set; }
+
+		public int order_col { get; set; }
 	}
 	//
 	//	public class Position
