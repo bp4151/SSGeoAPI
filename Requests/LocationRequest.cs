@@ -44,7 +44,7 @@ namespace GeoAPI
 		public string user_id { get; set; }
 
 		public GeoJson2DGeographicCoordinates loc { get; set; }
-
+		//auto increment field used when removing extra location records by user
 		public int order_col { get; set; }
 	}
 	//

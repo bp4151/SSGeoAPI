@@ -91,7 +91,7 @@ namespace GeoAPI
 				var query = Query.And (Query.EQ ("user_id", request.user_id));
 				var sortBy = SortBy.Null;
 				var update = Update.Inc ("order_col", 1.0);
-				var result = locationscollection.FindAndModify (query, sortBy, update, true);
+				locationscollection.FindAndModify (query, sortBy, update, true);
 
 				//Insert the location into the locations collection
 				locationscollection.Insert (location);
