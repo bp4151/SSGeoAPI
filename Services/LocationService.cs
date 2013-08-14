@@ -39,22 +39,23 @@ namespace GeoAPI
 //			}
 			locationscollection = db.GetCollection<Location> ("location");
 
-//			var keys = IndexKeys.Ascending("a", "b", "c");
-//			var options = IndexOptions.SetName("abcIndex");
-//			collection.CreateIndex(keys, options);
+//			var cdkeys = IndexKeys.Descending ("create_date");
+//			var cdoptions = IndexOptions.SetName ("location.create_date");
+//
+//			locationscollection.CreateIndex (cdkeys, cdoptions);
+//
+//			var ukeys = IndexKeys.Ascending ("user_id");
+//			var uoptions = IndexOptions.SetName ("location.user_id");
+//
+//			locationscollection.CreateIndex (ukeys, uoptions);
+//
+//			var ikeys = IndexKeys.Ascending ("order_col");
+//			var ioptions = IndexOptions.SetName ("location.order_col");
+//
+//			locationscollection.CreateIndex (ikeys, ioptions);
 
-			var cdkeys = IndexKeys.Descending ("create_date");
-			var cdoptions = IndexOptions.SetName ("location.create_date");
-
-			locationscollection.CreateIndex (cdkeys, cdoptions);
-
-			var ukeys = IndexKeys.Ascending ("user_id");
-			var uoptions = IndexOptions.SetName ("location.user_id");
-
-			locationscollection.CreateIndex (ukeys, uoptions);
-
-			var ikeys = IndexKeys.Ascending ("order_col");
-			var ioptions = IndexOptions.SetName ("location.order_col");
+			var ikeys = IndexKeys.Ascending ("user_id", "order_col");
+			var ioptions = IndexOptions.SetName ("location.user_id_order_col");
 
 			locationscollection.CreateIndex (ikeys, ioptions);
 
@@ -77,7 +78,12 @@ namespace GeoAPI
 		public LocationResponse Post (LocationRequest request)
 		{
 			LocationResponse response = new LocationResponse ();
+			response.responseStatus = new ResponseStatus ();
+
 			try {
+
+				//***************************************************************************************
+				//Create new location object and set variables for insert into location collection
 				Location location = new Location ();
 				location.user_id = request.user_id;
 				if (request.create_date == DateTime.MinValue) {
@@ -87,34 +93,53 @@ namespace GeoAPI
 				}
 
 				location.loc = new GeoJson2DGeographicCoordinates (request.longitude, request.latitude);
+				//***************************************************************************************
 
-				var query = Query.And (Query.EQ ("user_id", request.user_id));
+				//***************************************************************************************
+				//Find all records for the user whose location is being updated, and update all their 
+				//records incrementing the order_col + 1
+				var query = Query.EQ ("user_id", request.user_id);
 				var sortBy = SortBy.Null;
 				var update = Update.Inc ("order_col", 1.0);
-				locationscollection.FindAndModify (query, sortBy, update, true);
+				WriteConcernResult updresult = locationscollection.Update (query, update, UpdateFlags.Multi);
+				//***************************************************************************************
 
+				//***************************************************************************************
 				//Insert the location into the locations collection
 				locationscollection.Insert (location);
+				//***************************************************************************************
 
-				//if we have a locationLimit from the appSettings, then each time we insert for a user, remove all but the limit from the collection;
+				//***************************************************************************************
+				//if we have a locationLimit from the appSettings, then each time we insert for a user, 
+				//remove all but the limit from the collection;
 				if (locationLimit > 0) {
 
-					//var delquery = Query<Location>.EQ (l => l.user_id, request.user_id);
-					var delSortBy = SortBy.Descending ("order_col");
-					var entities = locationscollection.Find (query).SetSortOrder (delSortBy).Skip (locationLimit);
-					//var entities = locationscollection.Find (query).OrderByDescending (l => l.order_col).Skip (locationLimit);
-					foreach (var entity in entities) {
-						locationscollection.Remove (Query.EQ ("_id", entity.Id));
-					}
+					var delquery = Query.And (
+						Query.EQ ("user_id", request.user_id),
+						Query.GTE ("order_col", locationLimit)
+					);
+
+					WriteConcernResult delresult = locationscollection.Remove (delquery);
+
+//					var entities = locationscollection.Find (delquery);
+//
+//					foreach (var entity in entities) {
+//						locationscollection.Remove (Query.EQ ("_id", entity.Id));
+//					}
 
 				}
+				//***************************************************************************************
 
-				//Store found placeIDs and trigger types in a dictionary
-				//Dictionary<ObjectId, string> dictPlaces = GetPlacesByLocation (request);
+				//***************************************************************************************
+				//For this location, check all places to see if this location is:
+				//1) Now in the place but the previous location wasn't (ENTER TRIGGER)
+				//2) Not in the place but the previous location was (EXIT TRIGGER)
+				//3) Now in the place and the previous location was as well (DWELLING)
+				//4) Not in the place and the previous location was not as welll (NOT IN PLACE)
 				GetPlacesByLocation (request);
+				//***************************************************************************************
 
 
-				response.responseStatus = new ResponseStatus ();
 				response.responseStatus.ErrorCode = "200";
 				response.responseStatus.Message = "SUCCESS";
 				return response;
@@ -129,16 +154,13 @@ namespace GeoAPI
 		/// <summary>
 		/// Gets the places by location.
 		/// </summary>
-		/// <returns>The places by location.</returns>
 		/// <param name="request">Request.</param>
-		//Dictionary<ObjectId, string> GetPlacesByLocation (LocationRequest request)
 		void GetPlacesByLocation (LocationRequest request)
 		{
 			var earthRadius = 6378.0; // km
 		
 			try {
-
-			
+					
 				//Get places
 				MongoCollection<PlaceResponse> placescollection = db.GetCollection<PlaceResponse> ("place");
 				MongoCollection<Location> locationscollection = db.GetCollection<Location> ("location");
@@ -154,27 +176,35 @@ namespace GeoAPI
 
 				foreach (var place in placescollection.FindAll ()) {
 
-					//Dictionary<ObjectId, string> dictPlaces = place.usersInPlace ();
-
 					//Set the query to determine if the new location is in each place
 					var icquery = Query.WithinCircle ("loc", place.loc.Longitude, place.loc.Latitude, place.radius / earthRadius, false);
 
 					//Debug
 					Console.WriteLine (icquery);
 
-					//Get all locations for user by createdate desc
-					var locs = locationscollection.FindAll ().Where (u => u.user_id == request.user_id).OrderByDescending (l => l.create_date);
-					//Get all locations inside place for user by createdate desc
-					var locsinsideplace = locationscollection.Find (icquery).Where (l => l.user_id == request.user_id).OrderByDescending (l => l.create_date);
+					//Get all locations for user by order_col desc
+					//var locs = locationscollection.FindAll ().Where (u => u.user_id == request.user_id).OrderByDescending (l => l.order_col);
+					//Get all locations inside place for user by order_col desc
+					//var locsinsideplace = locationscollection.Find (icquery).Where (l => l.user_id == request.user_id).OrderByDescending (l => l.order_col);
 
-					List<Location> listlocs = new List<Location> ();
-					List<Location> listlocsinsideplace = new List<Location> ();
+					//List<Location> listlocs = new List<Location> ();
+					//List<Location> listlocsinsideplace = new List<Location> ();
+
+					List<Location> listlocs = locationscollection.FindAll ()
+						.Where (u => u.user_id == request.user_id)
+						.OrderBy (l => l.order_col)
+						.ToList ();
+
+					List<Location> listlocsinsideplace = locationscollection.Find (icquery)
+						.Where (l => l.user_id == request.user_id)
+						.OrderBy (l => l.order_col)
+						.ToList ();
 
 					//get the total list of locations for the given user into a list
-					listlocs = locs.ToList ();
+					//listlocs = locs.ToList ();
 
 					//get the list of locations that are in this place
-					listlocsinsideplace = locsinsideplace.ToList ();
+					//listlocsinsideplace = locsinsideplace.ToList ();
 
 					int idxCurrentLocation = -1;
 					int idxPriorLocation = -1;
@@ -192,8 +222,8 @@ namespace GeoAPI
 						Console.WriteLine ("Not in place");
 					}
 
-				//if idxCurrentLocation = 0 and idxPriorLocation = -1 ENTER
-				else if (idxCurrentLocation == 0 && idxPriorLocation == -1) {
+					//if idxCurrentLocation = 0 and idxPriorLocation = -1 ENTER
+					else if (idxCurrentLocation == 0 && idxPriorLocation == -1) {
 						//dictPlaces.Add (place.Id, "ENTER");
 						//If an enter trigger exists on the place, fire the trigger and add the user to the place
 						place.usersInPlace.AddIfNotExists (request.user_id);
@@ -202,8 +232,8 @@ namespace GeoAPI
 						RunTrigger (place.Id, place.usersInPlace, "ENTER");
 					}
 
-				//if idxCurrentLocation = -1 and idxPriorLocation = 0 EXIT
-				else if (idxCurrentLocation == -1 && idxPriorLocation == 0) {
+					//if idxCurrentLocation = -1 and idxPriorLocation = 0 EXIT
+					else if (idxCurrentLocation == -1 && idxPriorLocation == 0) {
 						//dictPlaces.Add (place.Id, "EXIT");
 						//If an exit trigger exists on the place, fire the trigger and remove the user to the place
 						place.usersInPlace.Remove (request.user_id);
@@ -214,10 +244,11 @@ namespace GeoAPI
 						RunTrigger (place.Id, userlist, "EXIT");
 					}
 
-				//if idxCurrentLocation = 0 and idxPriorLocation >= 0 STILL IN PLACE
-				else if (idxCurrentLocation == 0 && idxPriorLocation >= 0) {
+					//if idxCurrentLocation = 0 and idxPriorLocation >= 0 STILL IN PLACE
+					else if (idxCurrentLocation == 0 && idxPriorLocation >= 0) {
 						Console.WriteLine ("Still in place");
 					}
+
 				}
 
 			} catch (Exception ex) {
