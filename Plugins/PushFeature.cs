@@ -29,7 +29,7 @@ namespace GeoAPI
 
 			var appSettings = new AppSettings ();
 
-			this.ACSAPIToken = appSettings.GetString ("ACSPushToken");
+			this.ACSAPIToken = appSettings.GetString ("ACSAPIToken");
 			this.ACSBaseUrl = appSettings.GetString ("ACSBaseUrl");
 			this.ACSUserName = appSettings.GetString ("ACSUserName");
 			this.ACSPassword = appSettings.GetString ("ACSPassword");
