@@ -1,20 +1,19 @@
 ﻿<Properties GitUserInfo="UsingGIT">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Services/LocationService.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Requests/TriggerRequest.cs">
     <Files>
-      <File FileName="Requests/LocationRequest.cs" Line="21" Column="38" />
-      <File FileName="Services/LocationService.cs" Line="87" Column="9" />
-      <File FileName="web.config" Line="7" Column="38" />
+      <File FileName="swagger-ui/index.html" Line="33" Column="71" />
+      <File FileName="web.config" Line="13" Column="41" />
+      <File FileName="Global.asax.cs" Line="43" Column="75" />
+      <File FileName="Requests/TriggerRequest.cs" Line="72" Column="33" />
+      <File FileName="Requests/PlaceRequest.cs" Line="1" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
           <Node name="GeoAPI" expanded="True">
-            <Node name="Plugins" expanded="True" />
-            <Node name="Requests" expanded="True" />
-            <Node name="Responses" expanded="True" />
-            <Node name="Services" expanded="True">
-              <Node name="LocationService.cs" selected="True" />
+            <Node name="Requests" expanded="True">
+              <Node name="TriggerRequest.cs" selected="True" />
             </Node>
             <Node name="Global.asax" expanded="True" />
           </Node>
@@ -23,13 +22,7 @@
     </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore>
-      <Breakpoint file="/Users/bparr/Projects/MongoTest/MongoTest/Program.cs" line="86" column="1" />
-      <Breakpoint file="/Users/bparr/Projects/GeoAPI/Services/TriggerService.cs" line="131" column="1" />
-      <Breakpoint file="/Users/bparr/Projects/GeoAPI/Services/TriggerService.cs" line="163" column="1" />
-      <Breakpoint file="/Users/bparr/Projects/GeoAPI/Plugins/PushFeature.cs" line="55" column="1" />
-      <Breakpoint file="/Users/bparr/Projects/GeoAPI/Services/LocationService.cs" line="200" column="1" />
-    </BreakpointStore>
+    <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>

@@ -18,7 +18,7 @@ namespace GeoAPI
 		private MongoClient client = null;
 		private MongoServer server = null;
 		MongoDatabase db = null;
-		MongoCollection<PlaceResponse> placescollection = null;
+		MongoCollection<Place> placescollection = null;
 		MongoCollection<Trigger> triggerscollection = null;
 
 		public PlaceService ()
@@ -27,11 +27,15 @@ namespace GeoAPI
 			client = new MongoClient (connectionString);
 			server = client.GetServer ();
 			db = server.GetDatabase ("geoapi");
-			placescollection = db.GetCollection<PlaceResponse> ("place");
+			placescollection = db.GetCollection<Place> ("place");
 			triggerscollection = db.GetCollection<Trigger> ("trigger");
-			if (!BsonClassMap.IsClassMapRegistered (typeof(PlaceResponse))) {
-				BsonClassMap.RegisterClassMap<PlaceResponse> ();
+			if (!BsonClassMap.IsClassMapRegistered (typeof(Place))) {
+				BsonClassMap.RegisterClassMap<Place> ();
 			}
+			if (!BsonClassMap.IsClassMapRegistered (typeof(Trigger))) {
+				BsonClassMap.RegisterClassMap<Trigger> ();
+			}
+
 		}
 
 		/// <summary>
@@ -42,19 +46,23 @@ namespace GeoAPI
 		{
 			PlaceListResponse response = new PlaceListResponse ();
 
-			response.places = new List<PlaceResponse> ();
+			response.places = new List<Place> ();
 			var places = placescollection.FindAll ();
 
 			try {
 				foreach (var place in places) {
 					Console.WriteLine (JsonSerializer.SerializeToString (place));
-					PlaceResponse placeresponse = new PlaceResponse ();
-					placeresponse.Id = place.Id;
-					placeresponse.loc = new GeoJson2DGeographicCoordinates (place.loc.Longitude, place.loc.Latitude);
-					placeresponse.name = place.name;
-					placeresponse.radius = place.radius;
-					placeresponse.usersInPlace = place.usersInPlace;
-					response.places.Add (placeresponse);
+					Place _place = new Place ();
+					_place.usersInPlace = new List<string> ();
+
+					_place.Id = place.Id;
+					_place.loc = new GeoJson2DGeographicCoordinates (place.loc.Longitude, place.loc.Latitude);
+					_place.name = place.name;
+					_place.radius = place.radius;
+					_place.usersInPlace = place.usersInPlace;
+					_place.createDate = place.createDate;
+
+					response.places.Add (_place);
 				}
 			} catch (Exception ex) {
 				Console.WriteLine (ex.Message);
@@ -74,6 +82,7 @@ namespace GeoAPI
 		public PlaceResponse Get (PlaceRequest request)
 		{
 			PlaceResponse response = new PlaceResponse ();
+			response.usersInPlace = new List<string> ();
 
 			var query = Query.EQ ("_id", request.Id);
 			Place result = placescollection.FindOneAs<Place> (query);
@@ -97,27 +106,29 @@ namespace GeoAPI
 		/// <param name="request">Request.</param>
 		public PlaceCreateResponse Post (PlaceCreateUpdateRequest request)
 		{
-			PlaceCreateResponse response1 = new PlaceCreateResponse ();
-			PlaceResponse response2 = new PlaceResponse ();
+			PlaceCreateResponse response = new PlaceCreateResponse ();
+			Place place = new Place ();
 
-			response2.loc = new GeoJson2DGeographicCoordinates (request.longitude, request.latitude);
-			response2.name = request.name;
-			response2.radius = request.radius;
+			place.loc = new GeoJson2DGeographicCoordinates (request.longitude, request.latitude);
+			place.name = request.name;
+			place.radius = request.radius;
+			place.createDate = DateTime.Now;
+			place.usersInPlace = new List<string> ();
 
-			WriteConcernResult result = placescollection.Insert (response2);
+			WriteConcernResult result = placescollection.Insert (place);
 
-			response1.Id = response2.Id;
-			response1.responseStatus = new ResponseStatus ();
+			response.Id = place.Id;
+			response.responseStatus = new ResponseStatus ();
 
 			if (result.Ok) {
-				response1.responseStatus.ErrorCode = "200";
-				response1.responseStatus.Message = "SUCCESS";
+				response.responseStatus.ErrorCode = "200";
+				response.responseStatus.Message = "SUCCESS";
 			} else {
-				response1.responseStatus.ErrorCode = "500";
-				response1.responseStatus.Message = "FAILURE";
+				response.responseStatus.ErrorCode = "500";
+				response.responseStatus.Message = "FAILURE";
 			}
 
-			return response1;
+			return response;
 		}
 
 		/// <summary>
@@ -128,7 +139,7 @@ namespace GeoAPI
 		{
 			PlaceUpdateResponse response = new PlaceUpdateResponse ();
 
-			PlaceResponse place = new PlaceResponse ();
+			Place place = new Place ();
 			place.Id = request.Id;
 			GeoJson2DGeographicCoordinates loc = new GeoJson2DGeographicCoordinates (request.longitude, request.latitude);
 			place.loc = loc;
@@ -166,7 +177,7 @@ namespace GeoAPI
 
 			///Remove triggers on this place before deleting the place!
 			var query1 = Query.EQ ("_id", request.Id);
-			PlaceResponse place = placescollection.FindOne (query1);
+			Place place = placescollection.FindOne (query1);
 			FindAndModifyResult result1 = placescollection.FindAndRemove (query1, SortBy.Null);
 
 			var query2 = Query.EQ ("placeID", place.Id);

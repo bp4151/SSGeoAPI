@@ -17,7 +17,8 @@ namespace GeoAPI
 		private MongoClient client = null;
 		private MongoServer server = null;
 		MongoDatabase db = null;
-		MongoCollection<TriggerResponse> triggerscollection = null;
+		MongoCollection<Trigger> triggerscollection = null;
+		MongoCollection<Place> placecollection = null;
 
 		public TriggerService ()
 		{
@@ -26,10 +27,14 @@ namespace GeoAPI
 			server = client.GetServer ();
 			db = server.GetDatabase ("geoapi");
 			//Get locations
-			triggerscollection = db.GetCollection<TriggerResponse> ("trigger");
+			triggerscollection = db.GetCollection<Trigger> ("trigger");
+			placecollection = db.GetCollection<Place> ("place");
 
-			if (!BsonClassMap.IsClassMapRegistered (typeof(TriggerResponse))) {
-				BsonClassMap.RegisterClassMap<TriggerResponse> ();
+			if (!BsonClassMap.IsClassMapRegistered (typeof(Trigger))) {
+				BsonClassMap.RegisterClassMap<Trigger> ();
+			}
+			if (!BsonClassMap.IsClassMapRegistered (typeof(Place))) {
+				BsonClassMap.RegisterClassMap<Place> ();
 			}
 
 		}
@@ -38,35 +43,35 @@ namespace GeoAPI
 		{
 			TriggerListResponse response = new TriggerListResponse ();
 
-			response.triggers = new List<TriggerResponse> ();
+			response.triggers = new List<Trigger> ();
 			var triggers = triggerscollection.FindAll ();
 
 			try {
 
 				foreach (var trigger in triggers) {
 					Console.WriteLine (JsonSerializer.SerializeToString (trigger));
-					TriggerResponse triggerresponse = new TriggerResponse ();
-					triggerresponse.Id = trigger.Id;
-					triggerresponse.placeId = trigger.placeId;
-					triggerresponse.dateFrom = trigger.dateFrom;
-					triggerresponse.dateTo = trigger.dateTo;
-					triggerresponse.delay = trigger.delay;
-					triggerresponse.extra = trigger.extra;
-					triggerresponse.Id = trigger.Id;
-					triggerresponse.perUserRunCount = trigger.perUserRunCount;
-					triggerresponse.text = trigger.text;
-					triggerresponse.timeFrom = trigger.timeFrom;
-					triggerresponse.timeTo = trigger.timeTo;
-					triggerresponse.type = trigger.type;
-					response.triggers.Add (triggerresponse);
+					Trigger _trigger = new Trigger ();
+					_trigger.Id = trigger.Id;
+					_trigger.placeId = trigger.placeId;
+					_trigger.dateFrom = trigger.dateFrom;
+					_trigger.dateTo = trigger.dateTo;
+					_trigger.delay = trigger.delay;
+					_trigger.extra = trigger.extra;
+					_trigger.Id = trigger.Id;
+					_trigger.perUserRunCount = trigger.perUserRunCount;
+					_trigger.text = trigger.text;
+					_trigger.timeFrom = trigger.timeFrom;
+					_trigger.timeTo = trigger.timeTo;
+					_trigger.type = trigger.type;
+					response.triggers.Add (_trigger);
 				}
 			} catch (Exception ex) {
 				Console.WriteLine (ex.Message);
 			}
 
-			response.responseStatus = new ResponseStatus ();
-			response.responseStatus.ErrorCode = "200";
-			response.responseStatus.Message = "SUCCESS";
+			response.ResponseStatus = new ResponseStatus ();
+			response.ResponseStatus.ErrorCode = "200";
+			response.ResponseStatus.Message = "SUCCESS";
 
 			return response;
 		}
@@ -88,9 +93,9 @@ namespace GeoAPI
 			response.timeTo = trigger.timeTo;
 			response.type = trigger.type;
 			
-			response.responseStatus = new ResponseStatus ();
-			response.responseStatus.ErrorCode = "200";
-			response.responseStatus.Message = "SUCCESS";
+			response.ResponseStatus = new ResponseStatus ();
+			response.ResponseStatus.ErrorCode = "200";
+			response.ResponseStatus.Message = "SUCCESS";
 
 			return response;
 		}
@@ -98,32 +103,50 @@ namespace GeoAPI
 		public TriggerResponse Post (TriggerRequest request)
 		{
 			TriggerResponse response = new TriggerResponse ();
+			Trigger trigger = new Trigger ();
 
-			response.dateFrom = request.dateFrom;
-			response.dateTo = request.dateTo;
-			response.delay = request.delay;
-			response.extra = request.extra;
-			response.perUserRunCount = request.perUserRunCount;
-			response.placeId = request.placeId;
-			response.text = request.text;
-			response.timeFrom = request.timeFrom;
-			response.timeTo = request.timeTo;
-			response.type = request.type;
+			try {
 
-			WriteConcernResult result = triggerscollection.Insert (response);
+				trigger.dateFrom = request.dateFrom;
+				trigger.dateTo = request.dateTo;
+				trigger.delay = request.delay;
+				trigger.extra = request.extra;
+				trigger.perUserRunCount = request.perUserRunCount;
+				trigger.placeId = request.placeId;
+				trigger.text = request.text;
+				trigger.timeFrom = request.timeFrom;
+				trigger.timeTo = request.timeTo;
+				trigger.type = request.type;
 
-			response.responseStatus = new ResponseStatus ();
+				response.dateFrom = request.dateFrom;
+				response.dateTo = request.dateTo;
+				response.delay = request.delay;
+				response.extra = request.extra;
+				response.perUserRunCount = request.perUserRunCount;
+				response.placeId = request.placeId;
+				response.text = request.text;
+				response.timeFrom = request.timeFrom;
+				response.timeTo = request.timeTo;
+				response.type = request.type;
 
-			if (result.Ok) {
-				response.responseStatus.ErrorCode = "200";
-				response.responseStatus.Message = "SUCCESS";
-			} else {
-				response.responseStatus.ErrorCode = "500";
-				response.responseStatus.Message = "FAILURE";
+				WriteConcernResult result = triggerscollection.Insert (trigger);
+
+				response.ResponseStatus = new ResponseStatus ();
+
+				if (result.Ok) {
+					response.ResponseStatus.ErrorCode = "200";
+					response.ResponseStatus.Message = "SUCCESS";
+				} else {
+					response.ResponseStatus.ErrorCode = "500";
+					response.ResponseStatus.Message = "FAILURE";
+				}
+
+				return response;
+			} catch (Exception ex) {
+				response.ResponseStatus.ErrorCode = "500";
+				response.ResponseStatus.Message = ex.Message;
+				return response;
 			}
-
-			return response;
-
 		}
 		//Update
 		public TriggerResponse Put (TriggerRequest request)
@@ -160,14 +183,14 @@ namespace GeoAPI
 //				.Set ("type", request.type);
 			FindAndModifyResult result = triggerscollection.FindAndModify (query, SortBy.Null, update, true);
 
-			response.responseStatus = new ResponseStatus ();
+			response.ResponseStatus = new ResponseStatus ();
 
 			if (result.Ok) {
-				response.responseStatus.ErrorCode = "200";
-				response.responseStatus.Message = "SUCCESS";
+				response.ResponseStatus.ErrorCode = "200";
+				response.ResponseStatus.Message = "SUCCESS";
 			} else {
-				response.responseStatus.ErrorCode = "500";
-				response.responseStatus.Message = "FAILURE";
+				response.ResponseStatus.ErrorCode = "500";
+				response.ResponseStatus.Message = "FAILURE";
 			}
 
 			return response;
@@ -182,20 +205,53 @@ namespace GeoAPI
 
 			FindAndModifyResult result = triggerscollection.FindAndRemove (query, SortBy.Null);
 
-			response.responseStatus = new ResponseStatus ();
+			response.ResponseStatus = new ResponseStatus ();
 
 			if (result.Ok) {
-				response.responseStatus.ErrorCode = "200";
-				response.responseStatus.Message = "SUCCESS";
+				response.ResponseStatus.ErrorCode = "200";
+				response.ResponseStatus.Message = "SUCCESS";
 			} else {
-				response.responseStatus.ErrorCode = "500";
-				response.responseStatus.Message = "FAILURE";
+				response.ResponseStatus.ErrorCode = "500";
+				response.ResponseStatus.Message = "FAILURE";
 			}
 
 			return response;
 
 		}
 		//Run
+		public TriggerRunResponse Post (TriggerDeleteRequest request)
+		{
+			TriggerRunResponse response = new TriggerRunResponse ();
+
+			response.ResponseStatus = new ResponseStatus ();
+
+			try {
+
+				var triggerquery = Query.EQ ("_id", request.Id);
+
+				var trigger = triggerscollection.FindOneAs<Trigger> (triggerquery);
+
+				var placequery = Query.EQ ("_id", trigger.placeId);
+
+				var place = placecollection.FindOneAs<Place> (placequery);
+			 
+				bool bResult = Utility.Trigger.Run (this.GetAppHost (), this.appSettings, trigger.placeId, place.usersInPlace, trigger.type);
+
+				if (bResult == true) {
+					response.ResponseStatus.ErrorCode = "200";
+					response.ResponseStatus.Message = "SUCCESS";
+				} else {
+					response.ResponseStatus.ErrorCode = "500";
+					response.ResponseStatus.Message = "FAILURE";
+				}
+
+				return response;
+			} catch (Exception ex) {
+				response.ResponseStatus.ErrorCode = "500";
+				response.ResponseStatus.Message = ex.Message;
+				return response;
+			}
+		}
 	}
 }
 

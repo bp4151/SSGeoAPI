@@ -18,12 +18,19 @@
 
     <script type="text/javascript">
 	$(function () {
+
+		$.ajaxSetup({
+			beforeSend: function (jqXHR, settings) {
+			   jqXHR.setRequestHeader("Authorization-API", "fd75ec92-9d2f-429b-9057-a2830bef9d93");
+			}
+		});
+	
 	    window.swaggerUi = new SwaggerUi({
                 discoveryUrl:"../resources",
                 apiKey:"",
                 dom_id:"swagger-ui-container",
                 supportHeaderParams: false,
-                supportedSubmitMethods: ['get', 'post', 'put'],
+                supportedSubmitMethods: ['get', 'post', 'put', 'delete'],
                 onComplete: function(swaggerApi, swaggerUi){
                 	if(console) {
                         console.log("Loaded SwaggerUI")

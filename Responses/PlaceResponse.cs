@@ -7,6 +7,22 @@ using MongoDB.Driver.GeoJsonObjectModel;
 
 namespace GeoAPI
 {
+	public class Place
+	{
+		[BsonId]
+		public ObjectId Id { get; set; }
+
+		public string name { get; set; }
+
+		public GeoJson2DGeographicCoordinates loc { get; set; }
+
+		public int radius { get; set; }
+
+		public List<string> usersInPlace { get; set; }
+
+		public DateTime createDate { get; set; }
+	}
+
 	public class PlaceResponse
 	{
 		[BsonId]
@@ -19,6 +35,8 @@ namespace GeoAPI
 		public int radius { get; set; }
 
 		public List<string> usersInPlace { get; set; }
+
+		public DateTime createDate { get; set; }
 
 		public ResponseStatus responseStatus { get; set; }
 	}
@@ -44,12 +62,14 @@ namespace GeoAPI
 
 		public List<string> usersInPlace { get; set; }
 
+		public DateTime createDate { get; set; }
+
 		public ResponseStatus responseStatus { get; set; }
 	}
 
 	public class PlaceListResponse
 	{
-		public List<PlaceResponse> places { get; set; }
+		public List<Place> places { get; set; }
 
 		public ResponseStatus responseStatus { get; set; }
 	}

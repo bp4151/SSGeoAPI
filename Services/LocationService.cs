@@ -12,6 +12,7 @@ using MongoDB.Driver.Builders;
 using System.Linq;
 using MongoDB.Driver.GeoJsonObjectModel;
 using System.Text;
+using ServiceStack.WebHost.Endpoints;
 
 namespace GeoAPI
 {
@@ -79,6 +80,7 @@ namespace GeoAPI
 		{
 			LocationResponse response = new LocationResponse ();
 			response.responseStatus = new ResponseStatus ();
+			string triggerType = "NONE";
 
 			try {
 
@@ -136,14 +138,17 @@ namespace GeoAPI
 				//2) Not in the place but the previous location was (EXIT TRIGGER)
 				//3) Now in the place and the previous location was as well (DWELLING)
 				//4) Not in the place and the previous location was not as welll (NOT IN PLACE)
-				GetPlacesByLocation (request);
+				triggerType = GetPlacesByLocation (request);
 				//***************************************************************************************
 
+				Console.Write ("TriggerType: " + triggerType);
 
+				response.TriggerType = triggerType;
 				response.responseStatus.ErrorCode = "200";
 				response.responseStatus.Message = "SUCCESS";
 				return response;
 			} catch (Exception ex) {
+				response.TriggerType = triggerType;
 				response.responseStatus.ErrorCode = "500";
 				response.responseStatus.Message = ex.Message;
 				response.responseStatus.StackTrace = ex.StackTrace;
@@ -155,18 +160,20 @@ namespace GeoAPI
 		/// Gets the places by location.
 		/// </summary>
 		/// <param name="request">Request.</param>
-		void GetPlacesByLocation (LocationRequest request)
+		private string GetPlacesByLocation (LocationRequest request)
 		{
 			var earthRadius = 6378.0; // km
 		
+			string result = "NONE";
+
 			try {
 					
 				//Get places
-				MongoCollection<PlaceResponse> placescollection = db.GetCollection<PlaceResponse> ("place");
+				MongoCollection<Place> placescollection = db.GetCollection<Place> ("place");
 				MongoCollection<Location> locationscollection = db.GetCollection<Location> ("location");
 
-				if (!BsonClassMap.IsClassMapRegistered (typeof(PlaceResponse))) {
-					BsonClassMap.RegisterClassMap<PlaceResponse> ();
+				if (!BsonClassMap.IsClassMapRegistered (typeof(Place))) {
+					BsonClassMap.RegisterClassMap<Place> ();
 				}
 				if (!BsonClassMap.IsClassMapRegistered (typeof(Location))) {
 					BsonClassMap.RegisterClassMap<Location> ();
@@ -220,6 +227,7 @@ namespace GeoAPI
 					//if idxCurrentLocation = -1 and idxPriorLocation = -1 location not in place
 					if (idxCurrentLocation == -1 && idxPriorLocation == -1) {
 						Console.WriteLine ("Not in place");
+						result = "NONE";
 					}
 
 					//if idxCurrentLocation = 0 and idxPriorLocation = -1 ENTER
@@ -229,7 +237,9 @@ namespace GeoAPI
 						place.usersInPlace.AddIfNotExists (request.user_id);
 						placescollection.Save (place);
 						Console.WriteLine ("Execute ENTER trigger");
-						RunTrigger (place.Id, place.usersInPlace, "ENTER");
+						//RunTrigger (place.Id, place.usersInPlace, "ENTER");
+						Utility.Trigger.Run (this.GetAppHost (), this.appSettings, place.Id, place.usersInPlace, "ENTER");
+						result = "ENTER";
 					}
 
 					//if idxCurrentLocation = -1 and idxPriorLocation = 0 EXIT
@@ -241,28 +251,33 @@ namespace GeoAPI
 						Console.WriteLine ("Execute EXIT trigger");
 						List<string> userlist = new List<string> ();
 						userlist.Add (request.user_id);
-						RunTrigger (place.Id, userlist, "EXIT");
+						//RunTrigger (place.Id, userlist, "EXIT");
+						Utility.Trigger.Run (this.GetAppHost (), this.appSettings, place.Id, place.usersInPlace, "EXIT");
+						result = "EXIT";
 					}
 
 					//if idxCurrentLocation = 0 and idxPriorLocation >= 0 STILL IN PLACE
 					else if (idxCurrentLocation == 0 && idxPriorLocation >= 0) {
 						Console.WriteLine ("Still in place");
+						//Testing trigger
+						//RunTrigger (place.Id, place.usersInPlace, "ENTER");
+						result = "DWELLING";
 					}
 
 				}
-
+				return result;
 			} catch (Exception ex) {
-
+				throw ex;
 			}
 			//return dictPlaces;
 
 		}
-
+		/*
+		/// moved to utility class Trigger so this can be called from multiple locations within code
 		void RunTrigger (ObjectId place_id, List<string> usersInPlace, string triggerType)
 		{
 
 			var appHost = this.GetAppHost ();
-			var plugin = (ACSPushFeature)appHost.Plugins.Find (x => x is ACSPushFeature);
 
 			string connectionString = appSettings.Get ("MongoDB", "");
 			MongoClient client = new MongoClient (connectionString);
@@ -275,28 +290,38 @@ namespace GeoAPI
 				BsonClassMap.RegisterClassMap<TriggerResponse> ();
 			}
 
+			List<TriggerResponse> triggersonplace = new List<TriggerResponse> ();
+
 			try {
+
+				//var plugin = (ACSPushFeature)appHost.Plugins.Find (x => x is ACSPushFeature);
+				var plugin = (EverlivePushFeature)appHost.Plugins.Find (x => x is EverlivePushFeature);
+
 				//Get all triggers for this place
 				var triggerquery = Query.And (
 					Query.EQ ("placeId", place_id),
 					Query.EQ ("type", triggerType)
 				);
-				List<TriggerResponse> triggersonplace = triggerscollection.Find (triggerquery).ToList ();
+				triggersonplace = triggerscollection.Find (triggerquery).ToList ();
 
-				StringBuilder sb = new StringBuilder ();
-				for (int i = 0; i < usersInPlace.Count; i++) {
-					sb.Append (usersInPlace [0] + ",");
-				}
-				string userlist = sb.ToString ();
-				userlist = userlist.Substring (0, userlist.Length - 1);
+				if (triggersonplace.Count > 0) {
+					StringBuilder sb = new StringBuilder ();
+					for (int i = 0; i < usersInPlace.Count; i++) {
+						sb.Append (usersInPlace [0] + ",");
+					}
+					string userlist = sb.ToString ();
+					userlist = userlist.Substring (0, userlist.Length - 1);
 
-				for (int i = 0; i < triggersonplace.Count; i++) {
-					plugin.Notify ("BAIRFINDER-DEFAULT", userlist, triggersonplace [i].text);
+					for (int i = 0; i < triggersonplace.Count; i++) {
+						plugin.Notify ("", userlist, triggersonplace [i].text);
+					}
 				}
+
 			} catch (Exception ex) {
-
+				throw ex;
 			}
 		}
+		*/
 	}
 }
 

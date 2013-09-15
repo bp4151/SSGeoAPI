@@ -7,20 +7,6 @@ using MongoDB.Driver.GeoJsonObjectModel;
 
 namespace GeoAPI
 {
-	public class Place
-	{
-		[BsonId]
-		public ObjectId Id { get; set; }
-
-		public string name { get; set; }
-
-		public GeoJson2DGeographicCoordinates loc { get; set; }
-
-		public int radius { get; set; }
-
-		public List<string> usersInPlace { get; set; }
-	}
-
 	[Route("/place/create/", "POST")]
 	[Route("/place/update/{Id}", "PUT")]
 	public class PlaceCreateUpdateRequest

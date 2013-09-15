@@ -123,6 +123,7 @@
     <Compile Include="Requests\PushRequest.cs" />
     <Compile Include="Responses\PushResponse.cs" />
     <Compile Include="Services\PushService.cs" />
+    <Compile Include="UtilityClasses\Trigger.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
@@ -138,6 +139,7 @@
     <Folder Include="Responses\" />
     <Folder Include="Services\" />
     <Folder Include="Plugins\" />
+    <Folder Include="UtilityClasses\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="GeoloqiRequests.txt" />

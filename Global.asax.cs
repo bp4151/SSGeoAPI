@@ -40,7 +40,9 @@ namespace GeoAPI
 				var appSettings = new AppSettings ();
 
 				Plugins.Add (new SwaggerFeature ());
-				Plugins.Add (new ACSPushFeature ());
+				Plugins.Add (new CorsFeature ("http://petstore.swagger.wordnik.com"));
+				//Plugins.Add (new ACSPushFeature ());
+				Plugins.Add (new EverlivePushFeature ());
 
 				SetConfig (new EndpointHostConfig { 
 					DebugMode = true 
