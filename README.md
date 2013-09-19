@@ -3,11 +3,11 @@ SSGeoAPI
 
 Technologies
 
-ServiceStack API
-MongoDB
-C# .NET
-RestSharp
-Everlive .NET SDK
+- ServiceStack API
+- MongoDB
+- C# .NET
+- RestSharp
+- Everlive .NET SDK
 
 The intentions of this project are:
 
