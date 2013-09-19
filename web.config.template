@@ -1,25 +1,29 @@
-<?xml version="1.0"?>
-<!--
-Web.config file for BH100GeoloqiBridgeWeb.
-
-The settings that can be used in this file are documented at 
-http://www.mono-project.com/Config_system.web and 
-http://msdn2.microsoft.com/en-us/library/b5ysx397.aspx
--->
+<?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <appSettings>
-  	<!--ServiceStack GeoAPI token - Pass this as an Authorization-API header each time you make a request-->
-    <add key="GeoAPIKey" value="GUID">
+    <!--ServiceStack GeoAPI token - Pass this as an Authorization-API header each time you make a request-->
+    <add key="GeoAPIKey" value="fd75ec92-9d2f-429b-9057-a2830bef9d93">
     </add>
-    <!-- Set to 0 will store unlimited location requests per user. Set to 2 minimum for location triggering
-    <add key="LocationLimit" value="0">
+    <!-- Set to 0 will store unlimited location requests per user. Set to 2 minimum for location triggering-->
+    <add key="LocationLimit" value="2">
     </add>
-    <add key="MongoDB" value="mongodb://127.0.0.1:27017"></add>
+    <!---<add key="MongoDB" value="mongodb://127.0.0.1:27017"></add>-->
+    <add key="MongoDB" value="mongodb://bp4151:IndiCat06!@ds027618.mongolab.com:27618/geoapi">
+    </add>
+   	<!--Select Unit of Measure for radius queries (METER, KILOMETER, MILE)-->
+   	<add key="UoM" value="METER"></add>
     <!--ACS Values-->
-    <add key="ACSAPIToken" value="API KEY FROM APPCELERATOR CLOUD SERVICES (ACS) "></add>
+    <!---
+    <add key="ACSAPIToken" value="hJISWK8hhj1N0xREDAY4zgGvuNkMgVA3"></add>
     <add key="ACSBaseURL" value="https://api.cloud.appcelerator.com/v1/"></add>
-    <add key="ACSUserName" value="ACS AUTHENTICATED USER NAME"></add>    
-    <add key="ACSPassword" value="ACS AUTHENTICATED USER PASSWORD"></add>        
+    <add key="ACSUserName" value="bp4151@gmail.com"></add>    
+    <add key="ACSPassword" value="Test"></add>          	
+    -->
+    <add key="APIToken" value="sKoj4kDemFDI0Pjl"></add>
+    <add key="BaseURL" value="https://api.everlive.com/v1/"></add>
+    <add key="UserName" value="bp4151@gmail.com"></add>    
+    <add key="Password" value="Test"></add>          	
+    <add key="PushPlatform" value="EverlivePush"></add>
   </appSettings>
   <system.web>
     <compilation defaultLanguage="C#" debug="true">
