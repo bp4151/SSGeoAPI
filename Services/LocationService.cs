@@ -162,12 +162,37 @@ namespace GeoAPI
 		/// <param name="request">Request.</param>
 		private string GetPlacesByLocation (LocationRequest request)
 		{
-			var earthRadius = 6378.0; // km
+
+			var uom = appSettings.GetString ("UoM") ?? "";
+
+			var earthRadius = 0; //63780; // m
 		
 			string result = "NONE";
 
 			try {
 					
+				switch (uom) {
+				case "METER":
+					{
+						earthRadius = 63710;
+						break;
+					}
+				case "KILOMETER":
+					{
+						earthRadius = 6371;
+						break;
+					}
+				case "MILE":
+					{
+						earthRadius = 3959;
+						break;
+					}
+				default:
+					{
+						break;
+					}
+				}
+
 				//Get places
 				MongoCollection<Place> placescollection = db.GetCollection<Place> ("place");
 				MongoCollection<Location> locationscollection = db.GetCollection<Location> ("location");

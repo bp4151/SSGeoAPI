@@ -18,6 +18,7 @@ namespace GeoAPI.Utility
 		{
 
 			string connectionString = appSettings.Get ("MongoDB", "");
+			string pushPlatform = appSettings.Get ("PushPlatform", "");
 			MongoClient client = new MongoClient (connectionString);
 			MongoServer server = client.GetServer ();
 			MongoDatabase db = server.GetDatabase ("geoapi");
@@ -32,8 +33,11 @@ namespace GeoAPI.Utility
 
 			try {
 
+				//no longer using plugins for push. Using repository pattern instead.
 				//var plugin = (ACSPushFeature)appHost.Plugins.Find (x => x is ACSPushFeature);
-				var plugin = (EverlivePushFeature)appHost.Plugins.Find (x => x is EverlivePushFeature);
+				//var plugin = (EverlivePushFeature)appHost.Plugins.Find (x => x is EverlivePushFeature);
+
+				var pushfeature = appHost.GetContainer ().ResolveNamed<IPush> (pushPlatform);			
 
 				//Get all triggers for this place
 				var triggerquery = Query.And (
@@ -45,13 +49,14 @@ namespace GeoAPI.Utility
 				if (triggersonplace.Count > 0) {
 					StringBuilder sb = new StringBuilder ();
 					for (int i = 0; i < usersInPlace.Count; i++) {
-						sb.Append (usersInPlace [0] + ",");
+						sb.Append (usersInPlace [i] + ",");
 					}
 					string userlist = sb.ToString ();
 					userlist = userlist.Substring (0, userlist.Length - 1);
 
 					for (int i = 0; i < triggersonplace.Count; i++) {
-						plugin.Notify ("", userlist, triggersonplace [i].text);
+						//plugin.Notify ("", userlist, triggersonplace [i].text);
+						pushfeature.Notify ("", userlist, triggersonplace [i].text, "PushToken");
 					}
 				}
 				return true;

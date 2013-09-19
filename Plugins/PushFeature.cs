@@ -5,6 +5,8 @@ using ServiceStack.Configuration;
 using ServiceStack.Common.Web;
 using System.Linq;
 using System.Collections.Generic;
+using Telerik.Everlive.Sdk.Core;
+using Telerik.Everlive.Sdk.Core.Model.System.Push;
 
 namespace GeoAPI
 {
@@ -76,13 +78,21 @@ namespace GeoAPI
 				string Filter = "";
 
 				if (toids.Length > 0) {
-					Filter = "{'$or':[";
+					Filter = "{\"$or\":[";
 					for (var i = 0; i < toids.Length; i++) {
-						Filter = Filter + "{ 'UserId':'" + toids [i] + "'}";
+						Filter = Filter + "{ \"PushToken\":\"" + toids [i] + "\"},";
 					}
+					Filter = Filter.Substring(0, Filter.Length - 1);
 					Filter = Filter + "]}";
 				}
 
+				//string notification = "{ 'Filter': " + Filter + ", 'Message': '" + payload + "'}";
+
+				EverliveApp elApp = new EverliveApp(ELAPIToken);
+				var notification = new PushNotification(payload);
+				notification.Filter = Filter;
+				elApp.WorkWith().Push().Notifications().Create(notification).ExecuteSync();
+				/*
 				var client = new RestClient ();
 				client.BaseUrl = ELBaseUrl;
 
@@ -90,11 +100,11 @@ namespace GeoAPI
 				request.Method = Method.POST;
 				request.RequestFormat = RestSharp.DataFormat.Json;
 				request.Resource = this.ELAPIToken + "/Push/Notifications";
-				request.AddParameter ("Filter", Filter);
-				request.AddParameter ("Message", payload);
+				//request.AddParameter ("data", notification);
+				request.AddBody(notification);
 				response = client.Execute (request);
-
-				return response.StatusCode.ToString ();
+				*/
+				return "200";
 			}
 			catch(Exception ex)
 			{

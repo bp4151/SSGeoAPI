@@ -72,6 +72,12 @@
     <Reference Include="ServiceStack.Api.Swagger">
       <HintPath>packages\ServiceStack.Api.Swagger.3.9.56\lib\net35\ServiceStack.Api.Swagger.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\Documents\EverliveSDK.Windows\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.Everlive.Sdk">
+      <HintPath>..\..\Documents\EverliveSDK.Windows\Telerik.Everlive.Sdk.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
@@ -124,6 +130,9 @@
     <Compile Include="Responses\PushResponse.cs" />
     <Compile Include="Services\PushService.cs" />
     <Compile Include="UtilityClasses\Trigger.cs" />
+    <Compile Include="Push\IPush.cs" />
+    <Compile Include="Push\EverlivePush.cs" />
+    <Compile Include="Push\ACSPush.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
@@ -140,6 +149,7 @@
     <Folder Include="Services\" />
     <Folder Include="Plugins\" />
     <Folder Include="UtilityClasses\" />
+    <Folder Include="Push\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="GeoloqiRequests.txt" />

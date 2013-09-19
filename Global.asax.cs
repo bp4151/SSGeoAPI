@@ -39,10 +39,21 @@ namespace GeoAPI
 				//container.Register<ICacheClient>(new MemoryCacheClient());
 				var appSettings = new AppSettings ();
 
+				string baseUrl = appSettings.GetString ("BaseUrl") ?? "";
+				string APIToken = appSettings.GetString ("APIToken") ?? "";
+				string userName = appSettings.GetString ("UserName") ?? "";
+				string password = appSettings.GetString ("Password") ?? "";
+
 				Plugins.Add (new SwaggerFeature ());
 				Plugins.Add (new CorsFeature ("http://petstore.swagger.wordnik.com"));
+
+				//Plugin for push removed in favor of IoC/DI
 				//Plugins.Add (new ACSPushFeature ());
-				Plugins.Add (new EverlivePushFeature ());
+				//Plugins.Add (new EverlivePushFeature ());
+
+				//Use the string name when calling in the service to select which push feature to use
+				container.Register<IPush> ("EverlivePush", new EverlivePush (baseUrl, APIToken));
+				container.Register<IPush> ("ACSPush", new ACSPush (baseUrl, APIToken, userName, password));
 
 				SetConfig (new EndpointHostConfig { 
 					DebugMode = true 
