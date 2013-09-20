@@ -56,7 +56,7 @@ namespace GeoAPI.Utility
 
 					for (int i = 0; i < triggersonplace.Count; i++) {
 						//plugin.Notify ("", userlist, triggersonplace [i].text);
-						pushfeature.Notify ("", userlist, triggersonplace [i].text, "PushToken");
+						pushfeature.Notify ("", userlist, triggersonplace [i].text, "UserId");
 					}
 				}
 				return true;
