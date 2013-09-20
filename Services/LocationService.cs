@@ -189,6 +189,7 @@ namespace GeoAPI
 					}
 				default:
 					{
+						earthRadius = 63710;
 						break;
 					}
 				}
@@ -209,7 +210,7 @@ namespace GeoAPI
 				foreach (var place in placescollection.FindAll ()) {
 
 					//Set the query to determine if the new location is in each place
-					var icquery = Query.WithinCircle ("loc", place.loc.Longitude, place.loc.Latitude, place.radius / earthRadius, false);
+					var icquery = Query.WithinCircle ("loc", place.loc.Longitude, place.loc.Latitude, place.radius / earthRadius, true);
 
 					//Debug
 					Console.WriteLine (icquery);
