@@ -253,6 +253,8 @@ namespace GeoAPI
 
 					//if idxCurrentLocation = -1 and idxPriorLocation = -1 location not in place
 					if (idxCurrentLocation == -1 && idxPriorLocation == -1) {
+						place.usersInPlace.Remove (request.user_id);
+						placescollection.Save (place);
 						Console.WriteLine ("Not in place");
 						result = "NONE";
 					}
@@ -285,6 +287,8 @@ namespace GeoAPI
 
 					//if idxCurrentLocation = 0 and idxPriorLocation >= 0 STILL IN PLACE
 					else if (idxCurrentLocation == 0 && idxPriorLocation >= 0) {
+						place.usersInPlace.AddIfNotExists (request.user_id);
+						placescollection.Save (place);
 						Console.WriteLine ("Still in place");
 						//Testing trigger
 						//RunTrigger (place.Id, place.usersInPlace, "ENTER");
