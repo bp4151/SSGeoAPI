@@ -100,7 +100,7 @@ namespace GeoAPI
 			return response;
 		}
 		//Create
-		public TriggerResponse Post (TriggerRequest request)
+		public TriggerResponse Post (TriggerCreateRequest request)
 		{
 			TriggerResponse response = new TriggerResponse ();
 			Trigger trigger = new Trigger ();
@@ -149,7 +149,7 @@ namespace GeoAPI
 			}
 		}
 		//Update
-		public TriggerResponse Put (TriggerRequest request)
+		public TriggerResponse Put (TriggerUpdateRequest request)
 		{
 			TriggerResponse response = new TriggerResponse ();
 
@@ -197,7 +197,7 @@ namespace GeoAPI
 
 		}
 		//Delete
-		public TriggerDeleteResponse Delete (TriggerDeleteRequest request)
+		public TriggerDeleteResponse Delete (TriggerRequest request)
 		{
 			TriggerDeleteResponse response = new TriggerDeleteResponse ();
 
@@ -219,7 +219,7 @@ namespace GeoAPI
 
 		}
 		//Run
-		public TriggerRunResponse Post (TriggerDeleteRequest request)
+		public TriggerRunResponse Post (TriggerRunRequest request)
 		{
 			TriggerRunResponse response = new TriggerRunResponse ();
 
