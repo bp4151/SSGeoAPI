@@ -54,12 +54,36 @@ namespace GeoAPI
 		public ObjectId placeId { get; set; }
 	}
 
-	[Route("/trigger/info/{Id}", "GET")]
 	[Route("/trigger/create", "POST")]
+	public class TriggerCreateRequest
+	{
+		public ObjectId placeId { get; set; }
+
+		public string text { get; set; }
+
+		public Dictionary<string, object> extra { get; set; }
+
+		public DateTime dateFrom { get; set; }
+
+		public DateTime dateTo  { get; set; }
+
+		public DateTime timeFrom { get; set; }
+
+		public DateTime timeTo { get; set; }
+		//(ENTER, EXIT)
+		public string type { get; set; }
+		//1 or more, 0 unlimited
+		public int perUserRunCount { get; set; }
+		//(seconds)
+		public int delay { get; set; }
+	}
+
 	[Route("/trigger/update/{Id}", "PUT")]
-	public class TriggerRequest
+	public class TriggerUpdateRequest
 	{
 		[BsonId]
+		[ApiMember(Name="Id", Description = "Place ID", 
+		           ParameterType = "path", DataType = "string", IsRequired = true)]
 		public ObjectId Id { get; set; }
 
 		public ObjectId placeId { get; set; }
@@ -84,10 +108,21 @@ namespace GeoAPI
 	}
 
 	[Route("/trigger/delete/{Id}", "DELETE")]
-	[Route("/trigger/run/{Id}", "POST")]
-	public class TriggerDeleteRequest
+	[Route("/trigger/info/{Id}", "GET")]
+	public class TriggerRequest
 	{
 		[BsonId]
+		[ApiMember(Name="Id", Description = "Place ID", 
+		           ParameterType = "path", DataType = "string", IsRequired = true)]
+		public ObjectId Id { get; set; }
+	}
+
+	[Route("/trigger/run/{Id}", "POST")]
+	public class TriggerRunRequest
+	{
+		[BsonId]
+		[ApiMember(Name="Id", Description = "Place ID", 
+		           ParameterType = "path", DataType = "string", IsRequired = true)]
 		public ObjectId Id { get; set; }
 	}
 }

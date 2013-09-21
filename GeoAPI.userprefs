@@ -1,19 +1,20 @@
 ﻿<Properties GitUserInfo="UsingGIT">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Plugins/PushFeature.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Services/LocationService.cs">
     <Files>
-      <File FileName="Services/TriggerService.cs" Line="254" Column="1" />
-      <File FileName="UtilityClasses/Trigger.cs" Line="62" Column="1" />
-      <File FileName="Plugins/PushFeature.cs" Line="91" Column="1" />
+      <File FileName="Services/LocationService.cs" Line="286" Column="7" />
+      <File FileName="Global.asax.cs" Line="1" Column="1" />
+      <File FileName="web.config" Line="1" Column="1" />
+      <File FileName="Push/IPush.cs" Line="1" Column="1" />
+      <File FileName="Push/EverlivePush.cs" Line="1" Column="1" />
+      <File FileName="UtilityClasses/Trigger.cs" Line="1" Column="1" />
+      <File FileName="Services/TriggerService.cs" Line="1" Column="1" />
+      <File FileName="Requests/TestRequest.cs" Line="1" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
-          <Node name="GeoAPI" expanded="True">
-            <Node name="References" expanded="True" />
-            <Node name="Plugins" expanded="True">
-              <Node name="PushFeature.cs" selected="True" />
-            </Node>
+          <Node name="GeoAPI" expanded="True" selected="True">
             <Node name="Services" expanded="True" />
             <Node name="UtilityClasses" expanded="True" />
             <Node name="Global.asax" expanded="True" />
@@ -23,9 +24,13 @@
     </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="/Users/bparr/Projects/GeoAPI/Push/ACSPush.cs" line="69" column="1" />
+      <Breakpoint file="/Users/bparr/Projects/GeoAPI/Services/TriggerService.cs" line="226" column="1" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches>
     <Watch file="UtilityClasses/Trigger.cs" line="59" offsetX="331" offsetY="870" expression="ex" liveUpdate="False" />
+    <Watch file="Services/LocationService.cs" line="216" offsetX="417" offsetY="2535" expression="icquery" liveUpdate="False" />
   </MonoDevelop.Ide.DebuggingService.PinnedWatches>
 </Properties>

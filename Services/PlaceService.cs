@@ -104,7 +104,7 @@ namespace GeoAPI
 		/// place/create
 		/// </summary>
 		/// <param name="request">Request.</param>
-		public PlaceCreateResponse Post (PlaceCreateUpdateRequest request)
+		public PlaceCreateResponse Post (PlaceCreateRequest request)
 		{
 			PlaceCreateResponse response = new PlaceCreateResponse ();
 			Place place = new Place ();
@@ -135,7 +135,7 @@ namespace GeoAPI
 		/// place/update
 		/// </summary>
 		/// <param name="request">Request.</param>
-		public PlaceUpdateResponse Put (PlaceCreateUpdateRequest request)
+		public PlaceUpdateResponse Put (PlaceUpdateRequest request)
 		{
 			PlaceUpdateResponse response = new PlaceUpdateResponse ();
 

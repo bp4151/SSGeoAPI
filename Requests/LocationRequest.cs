@@ -16,8 +16,7 @@ namespace GeoAPI
 	[Route ("/Location/Update/", "POST")]
 	public class LocationRequest
 	{
-		public ObjectId Id { get; set; }
-
+		//public ObjectId Id { get; set; }
 		public DateTime create_date { get; set; }
 
 		public string user_id { get; set; }
