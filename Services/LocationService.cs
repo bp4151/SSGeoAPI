@@ -210,7 +210,8 @@ namespace GeoAPI
 				foreach (var place in placescollection.FindAll ()) {
 
 					//Set the query to determine if the new location is in each place
-					var icquery = Query.WithinCircle ("loc", place.loc.Longitude, place.loc.Latitude, place.radius / earthRadius, true);
+					float radius = (float)place.radius / (float)earthRadius;
+					var icquery = Query.WithinCircle ("loc", place.loc.Longitude, place.loc.Latitude, radius, true);
 
 					//Debug
 					Console.WriteLine (icquery);
