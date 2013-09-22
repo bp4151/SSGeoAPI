@@ -80,7 +80,7 @@ namespace GeoAPI
 		{
 			LocationResponse response = new LocationResponse ();
 			response.responseStatus = new ResponseStatus ();
-			string triggerType = "NONE";
+			response.TriggerResults = new List<string> ();
 
 			try {
 
@@ -93,6 +93,7 @@ namespace GeoAPI
 				} else {
 					location.create_date = request.create_date;
 				}
+				location.device_platform = request.device_platform;
 
 				location.loc = new GeoJson2DGeographicCoordinates (request.longitude, request.latitude);
 				//***************************************************************************************
@@ -138,17 +139,14 @@ namespace GeoAPI
 				//2) Not in the place but the previous location was (EXIT TRIGGER)
 				//3) Now in the place and the previous location was as well (DWELLING)
 				//4) Not in the place and the previous location was not as welll (NOT IN PLACE)
-				triggerType = GetPlacesByLocation (request);
+				response.TriggerResults = GetPlacesByLocation (request);
+				 
 				//***************************************************************************************
 
-				Console.Write ("TriggerType: " + triggerType);
-
-				response.TriggerType = triggerType;
 				response.responseStatus.ErrorCode = "200";
 				response.responseStatus.Message = "SUCCESS";
 				return response;
 			} catch (Exception ex) {
-				response.TriggerType = triggerType;
 				response.responseStatus.ErrorCode = "500";
 				response.responseStatus.Message = ex.Message;
 				response.responseStatus.StackTrace = ex.StackTrace;
@@ -160,8 +158,9 @@ namespace GeoAPI
 		/// Gets the places by location.
 		/// </summary>
 		/// <param name="request">Request.</param>
-		private string GetPlacesByLocation (LocationRequest request)
+		private List<string> GetPlacesByLocation (LocationRequest request)
 		{
+			List<string> triggerResults = new List<string> ();
 
 			var uom = appSettings.GetString ("UoM") ?? "";
 
@@ -216,29 +215,17 @@ namespace GeoAPI
 					//Debug
 					Console.WriteLine (icquery);
 
-					//Get all locations for user by order_col desc
-					//var locs = locationscollection.FindAll ().Where (u => u.user_id == request.user_id).OrderByDescending (l => l.order_col);
-					//Get all locations inside place for user by order_col desc
-					//var locsinsideplace = locationscollection.Find (icquery).Where (l => l.user_id == request.user_id).OrderByDescending (l => l.order_col);
-
-					//List<Location> listlocs = new List<Location> ();
-					//List<Location> listlocsinsideplace = new List<Location> ();
-
+					//Get all locations for user by order_col
 					List<Location> listlocs = locationscollection.FindAll ()
 						.Where (u => u.user_id == request.user_id)
 						.OrderBy (l => l.order_col)
 						.ToList ();
 
+					//Get all locations inside place for user by order_col 
 					List<Location> listlocsinsideplace = locationscollection.Find (icquery)
 						.Where (l => l.user_id == request.user_id)
 						.OrderBy (l => l.order_col)
 						.ToList ();
-
-					//get the total list of locations for the given user into a list
-					//listlocs = locs.ToList ();
-
-					//get the list of locations that are in this place
-					//listlocsinsideplace = locsinsideplace.ToList ();
 
 					int idxCurrentLocation = -1;
 					int idxPriorLocation = -1;
@@ -255,52 +242,48 @@ namespace GeoAPI
 					if (idxCurrentLocation == -1 && idxPriorLocation == -1) {
 						place.usersInPlace.Remove (request.user_id);
 						placescollection.Save (place);
-						Console.WriteLine ("Not in place");
-						result = "NONE";
+						Console.WriteLine ("Not in place" + place.name);
+						triggerResults.Add (place.name + ":NONE");
 					}
 
-					//if idxCurrentLocation = 0 and idxPriorLocation = -1 ENTER
-					else if (idxCurrentLocation == 0 && idxPriorLocation == -1) {
-						//dictPlaces.Add (place.Id, "ENTER");
+				//if idxCurrentLocation = 0 and idxPriorLocation = -1 ENTER
+				else if (idxCurrentLocation == 0 && idxPriorLocation == -1) {
 						//If an enter trigger exists on the place, fire the trigger and add the user to the place
 						place.usersInPlace.AddIfNotExists (request.user_id);
 						placescollection.Save (place);
-						Console.WriteLine ("Execute ENTER trigger");
-						//RunTrigger (place.Id, place.usersInPlace, "ENTER");
-						Utility.Trigger.Run (this.GetAppHost (), this.appSettings, place.Id, place.usersInPlace, "ENTER");
-						result = "ENTER";
+						Console.WriteLine ("Execute ENTER trigger on place " + place.name);
+
+						Utility.Trigger.Run (this.GetAppHost (), this.appSettings, place.Id, place.usersInPlace, "ENTER", listlocs [0].device_platform);
+						triggerResults.Add (place.name + ":ENTER");
 					}
 
-					//if idxCurrentLocation = -1 and idxPriorLocation = 0 EXIT
-					else if (idxCurrentLocation == -1 && idxPriorLocation == 0) {
-						//dictPlaces.Add (place.Id, "EXIT");
+				//if idxCurrentLocation = -1 and idxPriorLocation = 0 EXIT
+				else if (idxCurrentLocation == -1 && idxPriorLocation == 0) {
 						//If an exit trigger exists on the place, fire the trigger and remove the user to the place
 						place.usersInPlace.Remove (request.user_id);
 						placescollection.Save (place);
-						Console.WriteLine ("Execute EXIT trigger");
+						Console.WriteLine ("Execute EXIT trigger on place " + place.name);
 						List<string> userlist = new List<string> ();
 						userlist.Add (request.user_id);
-						//RunTrigger (place.Id, userlist, "EXIT");
-						Utility.Trigger.Run (this.GetAppHost (), this.appSettings, place.Id, place.usersInPlace, "EXIT");
-						result = "EXIT";
+						Utility.Trigger.Run (this.GetAppHost (), this.appSettings, place.Id, place.usersInPlace, "EXIT", listlocs [0].device_platform);
+						triggerResults.Add (place.name + ":EXIT");
 					}
 
-					//if idxCurrentLocation = 0 and idxPriorLocation >= 0 STILL IN PLACE
-					else if (idxCurrentLocation == 0 && idxPriorLocation >= 0) {
+				//if idxCurrentLocation = 0 and idxPriorLocation >= 0 STILL IN PLACE
+				else if (idxCurrentLocation == 0 && idxPriorLocation >= 0) {
 						place.usersInPlace.AddIfNotExists (request.user_id);
 						placescollection.Save (place);
-						Console.WriteLine ("Still in place");
+						Console.WriteLine ("Still in place " + place.name);
 						//Testing trigger
-						//RunTrigger (place.Id, place.usersInPlace, "ENTER");
-						result = "DWELLING";
+						triggerResults.Add (place.name + ":DWELLING");
 					}
 
 				}
-				return result;
+				return triggerResults;
 			} catch (Exception ex) {
 				throw ex;
 			}
-			//return dictPlaces;
+			
 
 		}
 		/*
