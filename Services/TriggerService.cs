@@ -134,6 +134,7 @@ namespace GeoAPI
 				response.ResponseStatus = new ResponseStatus ();
 
 				if (result.Ok) {
+					response.Id = trigger.Id;
 					response.ResponseStatus.ErrorCode = "200";
 					response.ResponseStatus.Message = "SUCCESS";
 				} else {
@@ -235,7 +236,7 @@ namespace GeoAPI
 
 				var place = placecollection.FindOneAs<Place> (placequery);
 			 
-				bool bResult = Utility.Trigger.Run (this.GetAppHost (), this.appSettings, trigger.placeId, place.usersInPlace, trigger.type);
+				bool bResult = Utility.Trigger.Run (this.GetAppHost (), this.appSettings, trigger.placeId, place.usersInPlace, trigger.type, request.device_platform);
 
 				if (bResult == true) {
 					response.ResponseStatus.ErrorCode = "200";

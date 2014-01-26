@@ -1,11 +1,21 @@
 using System;
+using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace GeoAPI
 {
-	public class PushResponse
+	public class PushByPlaceIDResponse : IHasResponseStatus
 	{
-		public PushResponse ()
-		{
+		public ResponseStatus ResponseStatus {
+			get;
+			set;
+		}
+	}
+
+	public class PushResponse : IHasResponseStatus
+	{
+		public ResponseStatus ResponseStatus {
+			get;
+			set;
 		}
 	}
 }

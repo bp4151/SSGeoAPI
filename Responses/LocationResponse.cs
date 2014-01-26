@@ -1,11 +1,12 @@
 using System;
 using ServiceStack.ServiceInterface.ServiceModel;
+using System.Collections.Generic;
 
 namespace GeoAPI
 {
 	public class LocationResponse
 	{
-		public string TriggerType { get; set; }
+		public List<String> TriggerResults { get; set; }
 
 		public ResponseStatus responseStatus { get; set; }
 	}

@@ -121,9 +121,15 @@ namespace GeoAPI
 	public class TriggerRunRequest
 	{
 		[BsonId]
-		[ApiMember(Name="Id", Description = "Place ID", 
+		[ApiMember(Name="Id", Description = "Trigger ID", 
 		           ParameterType = "path", DataType = "string", IsRequired = true)]
 		public ObjectId Id { get; set; }
+		/*
+		[ApiMember(Name="device_platform", Description = "Device Platform", 
+		           ParameterType = "body", DataType = "string", IsRequired = true)]
+		[ApiAllowableValues("device_platform", new string[] {"ios", "android"})] //Enum
+		*/
+		public string device_platform { get; set; }
 	}
 }
 

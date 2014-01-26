@@ -23,12 +23,10 @@ namespace GeoAPI
 {
 	public class Global : System.Web.HttpApplication
 	{
-		
-
 		public class AppHost : AppHostBase
 		{
 			//Tell Service Stack the name of your application and where to find your web services
-			public AppHost () : base("GeoAPI Web Services", typeof(TestService).Assembly)
+			public AppHost () : base ("GeoAPI Web Services", typeof(PushService).Assembly)
 			{
 
 			}
@@ -46,6 +44,7 @@ namespace GeoAPI
 
 				Plugins.Add (new SwaggerFeature ());
 				Plugins.Add (new CorsFeature ("http://petstore.swagger.wordnik.com"));
+				Plugins.Add (new CorsFeature ("*", "GET, POST, PUT, DELETE, OPTIONS", "content-type", false));
 
 				//Plugin for push removed in favor of IoC/DI
 				//Plugins.Add (new ACSPushFeature ());

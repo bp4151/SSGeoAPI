@@ -13,12 +13,13 @@ namespace GeoAPI.Utility
 {
 	public static class Trigger
 	{
-
-		public static bool Run (IAppHost appHost, AppSettings appSettings, ObjectId place_id, List<string> usersInPlace, string triggerType)
+		public static bool Run (IAppHost appHost, AppSettings appSettings, ObjectId place_id, List<string> usersInPlace, string triggerType, string devicePlatform)
 		{
 
 			string connectionString = appSettings.Get ("MongoDB", "");
 			string pushPlatform = appSettings.Get ("PushPlatform", "");
+			string channel = appSettings.Get ("Channel", "");
+
 			MongoClient client = new MongoClient (connectionString);
 			MongoServer server = client.GetServer ();
 			MongoDatabase db = server.GetDatabase ("geoapi");
@@ -41,9 +42,9 @@ namespace GeoAPI.Utility
 
 				//Get all triggers for this place
 				var triggerquery = Query.And (
-					Query.EQ ("placeId", place_id),
-					Query.EQ ("type", triggerType)
-				);
+					                   Query.EQ ("placeId", place_id),
+					                   Query.EQ ("type", triggerType)
+				                   );
 				triggersonplace = triggerscollection.Find (triggerquery).ToList ();
 
 				if (triggersonplace.Count > 0) {
@@ -52,17 +53,20 @@ namespace GeoAPI.Utility
 						sb.Append (usersInPlace [i] + ",");
 					}
 					string userlist = sb.ToString ();
-					userlist = userlist.Substring (0, userlist.Length - 1);
-
-					for (int i = 0; i < triggersonplace.Count; i++) {
-						//plugin.Notify ("", userlist, triggersonplace [i].text);
-						pushfeature.Notify ("", userlist, triggersonplace [i].text, "UserId");
+					if (userlist.Length > 0) {
+						userlist = userlist.Substring (0, userlist.Length - 1);
+						for (int i = 0; i < triggersonplace.Count; i++) {
+							//plugin.Notify ("", userlist, triggersonplace [i].text);
+							pushfeature.Notify (channel, userlist, triggersonplace [i].text, "UserId", devicePlatform);
+						}
 					}
+
+
 				}
 				return true;
 
 			} catch (Exception ex) {
-				return false;
+				throw ex;
 			}
 		}
 	}

@@ -16,6 +16,8 @@ namespace GeoAPI
 
 		private string Password { get; set; }
 
+		RestClient client = new RestClient ();
+
 		public ACSPush (string BaseUrl, string APIToken, string UserName, string Password)
 		{
 			this.APIToken = APIToken;
@@ -32,18 +34,19 @@ namespace GeoAPI
 		/// <param name="to_ids">To_ids.</param>
 		/// <param name="payload">Payload.</param>
 		/// <param name="filterType">Filter type. NOT USED IN ACS PUSH</param>
-		public virtual string Notify (string channel, string to_ids, string payload, string filterType)
+		public virtual string Notify (string channel, string to_ids, string payload, string filterType, string devicePlatform)
 		{
 			Login ();
 
-			var client = new RestClient ();
 			client.BaseUrl = BaseUrl;
 
 			var request = new RestRequest ();
 			request.Method = Method.POST;
+			request.AddHeader ("Content-Type", "application/json");
 			request.Resource = "push_notification/notify.json?key=" + this.APIToken;
-			request.AddCookie ("_session_id", SessionID);
-			//request.AddHeader ("_session_id", ACSSessionID);
+			request.AddUrlSegment ("key", this.APIToken);
+			//request.AddCookie ("_session_id", SessionID);
+
 			request.AddParameter ("channel", channel);
 			request.AddParameter ("to_ids", to_ids);
 			request.AddParameter ("payload", payload);
@@ -55,12 +58,16 @@ namespace GeoAPI
 
 		private void Login ()
 		{
-			var client = new RestClient ();
+
 			client.BaseUrl = BaseUrl;
 
 			var request = new RestRequest ();
 			request.Method = Method.POST;
+			request.AddHeader ("Content-Type", "application/json");
+			client.CookieContainer = new System.Net.CookieContainer ();
+			request.AddUrlSegment ("key", this.APIToken);
 			request.Resource = "users/login.json?key=" + this.APIToken;
+
 			request.AddParameter ("login", this.UserName);
 			request.AddParameter ("password", this.Password);
 			IRestResponse response = client.Execute (request);

@@ -7,7 +7,7 @@ using MongoDB.Driver.GeoJsonObjectModel;
 
 namespace GeoAPI
 {
-	[Route("/place/create/", "POST")]
+	[Route ("/place/create", "POST")]
 	public class PlaceCreateRequest
 	{
 		public string name { get; set; }
@@ -19,11 +19,11 @@ namespace GeoAPI
 		public int radius { get; set; }
 	}
 
-	[Route("/place/update/{Id}", "PUT")]
+	[Route ("/place/update/{Id}", "PUT")]
 	public class PlaceUpdateRequest
 	{
 		[BsonId]
-		[ApiMember(Name="Id", Description = "Place ID", ParameterType = "path", DataType = "string", IsRequired = true)]
+		[ApiMember (Name = "Id", Description = "Place ID", ParameterType = "path", DataType = "string", IsRequired = true)]
 		public ObjectId Id { get; set; }
 
 		public string name { get; set; }
@@ -35,25 +35,25 @@ namespace GeoAPI
 		public int radius { get; set; }
 	}
 
-	[Route("/place/list", "GET")]
+	[Route ("/place/list", "GET")]
 	public class PlaceListRequest
 	{
 	}
 
-	[Route("/place/info/{Id}", "GET")]
+	[Route ("/place/info/{Id}", "GET")]
 	public class PlaceRequest
 	{
-		[ApiMember(Name="Id", Description = "Place ID", 
-		           ParameterType = "path", DataType = "string", IsRequired = true)]
+		[ApiMember (Name = "Id", Description = "Place ID", 
+			ParameterType = "path", DataType = "string", IsRequired = true)]
 		public ObjectId Id { get; set; }
 	}
 
-	[Route("/place/delete/{Id}", "DELETE")]
+	[Route ("/place/delete/{Id}", "DELETE")]
 	public class PlaceDeleteRequest
 	{
 		[BsonId]
-		[ApiMember(Name="Id", Description = "Place ID", 
-		           ParameterType = "path", DataType = "string", IsRequired = true)]
+		[ApiMember (Name = "Id", Description = "Place ID", 
+			ParameterType = "path", DataType = "string", IsRequired = true)]
 		public ObjectId Id { get; set; }
 	}
 }

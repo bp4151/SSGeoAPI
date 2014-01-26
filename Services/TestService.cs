@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace GeoAPI
 {
-	public class TestService : Service
+	public class TestService //: Service
 	{
 		public TestListResponse Get (TestListRequest request)
 		{

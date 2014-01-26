@@ -9,6 +9,7 @@ using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 using MongoDB.Driver.Builders;
 using MongoDB.Driver.GeoJsonObjectModel;
+using System.Linq;
 
 namespace GeoAPI
 {
@@ -109,26 +110,33 @@ namespace GeoAPI
 			PlaceCreateResponse response = new PlaceCreateResponse ();
 			Place place = new Place ();
 
-			place.loc = new GeoJson2DGeographicCoordinates (request.longitude, request.latitude);
-			place.name = request.name;
-			place.radius = request.radius;
-			place.createDate = DateTime.Now;
-			place.usersInPlace = new List<string> ();
+			try {
+				place.loc = new GeoJson2DGeographicCoordinates (request.longitude, request.latitude);
+				place.name = request.name;
+				place.radius = request.radius;
+				place.createDate = DateTime.Now;
+				place.usersInPlace = GetUsersInPlace (request);
 
-			WriteConcernResult result = placescollection.Insert (place);
+				WriteConcernResult result = placescollection.Insert (place);
 
-			response.Id = place.Id;
-			response.responseStatus = new ResponseStatus ();
+				response.Id = place.Id;
+				response.responseStatus = new ResponseStatus ();
 
-			if (result.Ok) {
-				response.responseStatus.ErrorCode = "200";
-				response.responseStatus.Message = "SUCCESS";
-			} else {
+				if (result.Ok) {
+					response.responseStatus.ErrorCode = "200";
+					response.responseStatus.Message = "SUCCESS";
+				} else {
+					response.responseStatus.ErrorCode = "500";
+					response.responseStatus.Message = "FAILURE";
+				}
+
+				return response;
+			} catch (Exception ex) {
 				response.responseStatus.ErrorCode = "500";
-				response.responseStatus.Message = "FAILURE";
+				response.responseStatus.Message = ex.Message;
+				response.responseStatus.StackTrace = ex.StackTrace;
+				return response;
 			}
-
-			return response;
 		}
 
 		/// <summary>
@@ -139,12 +147,22 @@ namespace GeoAPI
 		{
 			PlaceUpdateResponse response = new PlaceUpdateResponse ();
 
+			// Convert to PlaceCreateRequest so we can get the new list of usersInPlace
+			PlaceCreateRequest pcr = new PlaceCreateRequest ();
+			pcr.latitude = request.latitude;
+			pcr.longitude = request.longitude;
+			pcr.name = request.name;
+			pcr.radius = request.radius;
+
+			//Create the new place object so we can update it
 			Place place = new Place ();
 			place.Id = request.Id;
 			GeoJson2DGeographicCoordinates loc = new GeoJson2DGeographicCoordinates (request.longitude, request.latitude);
 			place.loc = loc;
 			place.name = request.name;
 			place.radius = request.radius;
+			//Get the users in place based on the new data
+			place.usersInPlace = GetUsersInPlace (pcr);
 
 			var query = Query.EQ ("_id", request.Id);
 			var update = Update.Replace (place);
@@ -193,6 +211,67 @@ namespace GeoAPI
 				response.responseStatus.Message = "FAILURE";
 			}
 			return response;
+		}
+
+		private List<string> GetUsersInPlace (PlaceCreateRequest request)
+		{
+			List<string> usersInPlace = new List<string> ();
+
+			var uom = appSettings.GetString ("UoM") ?? "";
+
+			var earthRadius = 0; //63780; // m
+
+			try {
+
+				switch (uom) {
+				case "METER":
+					{
+						earthRadius = 63710;
+						break;
+					}
+				case "KILOMETER":
+					{
+						earthRadius = 6371;
+						break;
+					}
+				case "MILE":
+					{
+						earthRadius = 3959;
+						break;
+					}
+				default:
+					{
+						earthRadius = 63710;
+						break;
+					}
+				}
+
+				//Get locations
+				MongoCollection<Location> locationscollection = db.GetCollection<Location> ("location");
+
+				if (!BsonClassMap.IsClassMapRegistered (typeof(Location))) {
+					BsonClassMap.RegisterClassMap<Location> ();
+				}
+
+				float radius = (float)request.radius / (float)earthRadius;
+
+				//Set the query to determine if the selected location is in the place
+				var icquery = Query.WithinCircle ("loc", request.longitude, request.latitude, radius, true);
+
+				//Debug
+				Console.WriteLine (icquery);
+
+				//Get all locations inside place for user where createdate is less than a day old and the record is the most recent 
+				List<Location> listlocsinsideplace = locationscollection.Find (icquery)
+				.Where (l => l.create_date > DateTime.Now.AddDays (-1) && l.order_col == 0)
+					.ToList ();
+
+				usersInPlace = listlocsinsideplace.Select (l => l.user_id).Distinct ().ToList ();
+
+				return usersInPlace;
+			} catch (Exception ex) {
+				throw ex;
+			}
 		}
 	}
 }

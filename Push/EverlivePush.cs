@@ -24,7 +24,7 @@ namespace GeoAPI
 		/// <param name="to_ids">To_ids.</param>
 		/// <param name="payload">Payload.</param>
 		/// <param name="filterType">Filter type.</param>
-		public virtual string Notify (string channel, string to_ids, string payload, string filterType)
+		public virtual string Notify (string channel, string to_ids, string message, string filterType, string devicePlatform)
 		{
 			IRestResponse response = null;
 			try {
@@ -44,30 +44,30 @@ namespace GeoAPI
 				}
 
 				//string notification = "{ 'Filter': " + Filter + ", 'Message': '" + payload + "'}";
-
+				//TODO: finish changes to push notification based on device type
 				EverliveApp elApp = new EverliveApp(this.APIToken);
-				var notification = new PushNotification(payload);
+
+				var notification = new PushNotification();
+				notification.Message = message;
+				/*
+				if (devicePlatform.ToUpper() == "IOS")
+				{
+					notification.iOS = new Telerik.Everlive.Sdk.Core.Model.System.Push.IOS.IOSNotification();
+					notification.iOS.CustomProperties.Add("aps.alert", message);
+				}
+				else if (devicePlatform.ToUpper() == "ANDROID")
+				{
+					notification.Message = message;
+				}
+				*/
 				notification.Filter = Filter;
 				elApp.WorkWith().Push().Notifications().Create(notification).ExecuteSync();
-				/*
-				var client = new RestClient ();
-				client.BaseUrl = ELBaseUrl;
 
-				var request = new RestRequest ();
-				request.Method = Method.POST;
-				request.RequestFormat = RestSharp.DataFormat.Json;
-				request.Resource = this.ELAPIToken + "/Push/Notifications";
-				//request.AddParameter ("data", notification);
-				request.AddBody(notification);
-				response = client.Execute (request);
-				*/
 				return "200";
 			}
 			catch(Exception ex)
 			{
-				response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
-				response.StatusDescription = ex.Message;
-				return response.StatusCode.ToString();
+				throw ex;
 
 			}
 		}
