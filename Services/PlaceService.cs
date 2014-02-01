@@ -94,9 +94,9 @@ namespace GeoAPI
 			response.radius = result.radius;
 			response.usersInPlace = result.usersInPlace;
 
-			response.responseStatus = new ResponseStatus ();
-			response.responseStatus.ErrorCode = "200";
-			response.responseStatus.Message = "SUCCESS";
+			response.ResponseStatus = new ResponseStatus ();
+			response.ResponseStatus.ErrorCode = "200";
+			response.ResponseStatus.Message = "SUCCESS";
 			return response;
 
 		}
@@ -120,21 +120,21 @@ namespace GeoAPI
 				WriteConcernResult result = placescollection.Insert (place);
 
 				response.Id = place.Id;
-				response.responseStatus = new ResponseStatus ();
+				response.ResponseStatus = new ResponseStatus ();
 
 				if (result.Ok) {
-					response.responseStatus.ErrorCode = "200";
-					response.responseStatus.Message = "SUCCESS";
+					response.ResponseStatus.ErrorCode = "200";
+					response.ResponseStatus.Message = "SUCCESS";
 				} else {
-					response.responseStatus.ErrorCode = "500";
-					response.responseStatus.Message = "FAILURE";
+					response.ResponseStatus.ErrorCode = "500";
+					response.ResponseStatus.Message = "FAILURE";
 				}
 
 				return response;
 			} catch (Exception ex) {
-				response.responseStatus.ErrorCode = "500";
-				response.responseStatus.Message = ex.Message;
-				response.responseStatus.StackTrace = ex.StackTrace;
+				response.ResponseStatus.ErrorCode = "500";
+				response.ResponseStatus.Message = ex.Message;
+				response.ResponseStatus.StackTrace = ex.StackTrace;
 				return response;
 			}
 		}
@@ -172,13 +172,13 @@ namespace GeoAPI
 			response.loc = loc;
 			response.name = request.name;
 			response.radius = request.radius;
-			response.responseStatus = new ResponseStatus ();
+			response.ResponseStatus = new ResponseStatus ();
 			if (result.Ok) {
-				response.responseStatus.ErrorCode = "200";
-				response.responseStatus.Message = "SUCCESS";
+				response.ResponseStatus.ErrorCode = "200";
+				response.ResponseStatus.Message = "SUCCESS";
 			} else {
-				response.responseStatus.ErrorCode = "500";
-				response.responseStatus.Message = "FAILURE";
+				response.ResponseStatus.ErrorCode = "500";
+				response.ResponseStatus.Message = "FAILURE";
 
 			}
 			return response;
@@ -204,14 +204,14 @@ namespace GeoAPI
 			//Place place = placescollection.FindOne (query1);
 			FindAndModifyResult result1 = placescollection.FindAndRemove (query1, SortBy.Null);
 
-			response.responseStatus = new ResponseStatus ();
+			response.ResponseStatus = new ResponseStatus ();
 
 			if (result1.Ok && result2.Ok) {
-				response.responseStatus.ErrorCode = "200";
-				response.responseStatus.Message = "SUCCESS";
+				response.ResponseStatus.ErrorCode = "200";
+				response.ResponseStatus.Message = "SUCCESS";
 			} else {
-				response.responseStatus.ErrorCode = "500";
-				response.responseStatus.Message = "FAILURE";
+				response.ResponseStatus.ErrorCode = "500";
+				response.ResponseStatus.Message = "FAILURE";
 			}
 			return response;
 		}

@@ -8,7 +8,7 @@ namespace GeoAPI
 	{
 		public List<String> TriggerResults { get; set; }
 
-		public ResponseStatus responseStatus { get; set; }
+		public ResponseStatus ResponseStatus { get; set; }
 	}
 }
 

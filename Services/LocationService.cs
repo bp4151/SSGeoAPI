@@ -79,7 +79,7 @@ namespace GeoAPI
 		public LocationResponse Post (LocationRequest request)
 		{
 			LocationResponse response = new LocationResponse ();
-			response.responseStatus = new ResponseStatus ();
+			response.ResponseStatus = new ResponseStatus ();
 			response.TriggerResults = new List<string> ();
 
 			try {
@@ -118,9 +118,9 @@ namespace GeoAPI
 				if (locationLimit > 0) {
 
 					var delquery = Query.And (
-						Query.EQ ("user_id", request.user_id),
-						Query.GTE ("order_col", locationLimit)
-					);
+						               Query.EQ ("user_id", request.user_id),
+						               Query.GTE ("order_col", locationLimit)
+					               );
 
 					WriteConcernResult delresult = locationscollection.Remove (delquery);
 
@@ -143,13 +143,13 @@ namespace GeoAPI
 				 
 				//***************************************************************************************
 
-				response.responseStatus.ErrorCode = "200";
-				response.responseStatus.Message = "SUCCESS";
+				response.ResponseStatus.ErrorCode = "200";
+				response.ResponseStatus.Message = "SUCCESS";
 				return response;
 			} catch (Exception ex) {
-				response.responseStatus.ErrorCode = "500";
-				response.responseStatus.Message = ex.Message;
-				response.responseStatus.StackTrace = ex.StackTrace;
+				response.ResponseStatus.ErrorCode = "500";
+				response.ResponseStatus.Message = ex.Message;
+				response.ResponseStatus.StackTrace = ex.StackTrace;
 				return response;
 			}
 		}

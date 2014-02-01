@@ -38,7 +38,7 @@ namespace GeoAPI
 
 		public DateTime createDate { get; set; }
 
-		public ResponseStatus responseStatus { get; set; }
+		public ResponseStatus ResponseStatus { get; set; }
 	}
 
 	public class PlaceCreateResponse
@@ -46,7 +46,7 @@ namespace GeoAPI
 		[BsonId]
 		public ObjectId Id { get; set; }
 
-		public ResponseStatus responseStatus { get; set; }
+		public ResponseStatus ResponseStatus { get; set; }
 	}
 
 	public class PlaceUpdateResponse
@@ -64,7 +64,7 @@ namespace GeoAPI
 
 		public DateTime createDate { get; set; }
 
-		public ResponseStatus responseStatus { get; set; }
+		public ResponseStatus ResponseStatus { get; set; }
 	}
 
 	public class PlaceListResponse
@@ -76,7 +76,7 @@ namespace GeoAPI
 
 	public class PlaceDeleteResponse
 	{
-		public ResponseStatus responseStatus { get; set; }
+		public ResponseStatus ResponseStatus { get; set; }
 	}
 }
 
