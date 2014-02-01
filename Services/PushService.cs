@@ -54,6 +54,7 @@ namespace GeoAPI
 				bool bResult = Utility.Push.Run (this.GetAppHost (), this.appSettings, trigger.placeId, place.usersInPlace, request.message, "");
 
 				if (bResult == true) {
+					response.MessageCount = place.usersInPlace.Count;
 					response.ResponseStatus.ErrorCode = "200";
 					response.ResponseStatus.Message = "SUCCESS";
 				} else {

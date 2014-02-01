@@ -194,12 +194,15 @@ namespace GeoAPI
 			PlaceDeleteResponse response = new PlaceDeleteResponse ();
 
 			///Remove triggers on this place before deleting the place!
-			var query1 = Query.EQ ("_id", request.Id);
-			Place place = placescollection.FindOne (query1);
-			FindAndModifyResult result1 = placescollection.FindAndRemove (query1, SortBy.Null);
+			/// 
+			///
 
-			var query2 = Query.EQ ("placeID", place.Id);
+			var query2 = Query.EQ ("placeId", request.Id);
 			FindAndModifyResult result2 = triggerscollection.FindAndRemove (query2, SortBy.Null);
+			 
+			var query1 = Query.EQ ("_id", request.Id);
+			//Place place = placescollection.FindOne (query1);
+			FindAndModifyResult result1 = placescollection.FindAndRemove (query1, SortBy.Null);
 
 			response.responseStatus = new ResponseStatus ();
 

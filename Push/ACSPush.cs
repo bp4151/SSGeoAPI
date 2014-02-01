@@ -45,7 +45,7 @@ namespace GeoAPI
 			request.AddHeader ("Content-Type", "application/json");
 			request.Resource = "push_notification/notify.json?key=" + this.APIToken;
 			request.AddUrlSegment ("key", this.APIToken);
-			//request.AddCookie ("_session_id", SessionID);
+			request.AddCookie ("_session_id", SessionID);
 
 			request.AddParameter ("channel", channel);
 			request.AddParameter ("to_ids", to_ids);

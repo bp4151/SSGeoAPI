@@ -5,10 +5,9 @@ namespace GeoAPI
 {
 	public class PushByPlaceIDResponse : IHasResponseStatus
 	{
-		public ResponseStatus ResponseStatus {
-			get;
-			set;
-		}
+		public int MessageCount { get; set; }
+
+		public ResponseStatus ResponseStatus { get; set; }
 	}
 
 	public class PushResponse : IHasResponseStatus

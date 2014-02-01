@@ -43,18 +43,18 @@ namespace GeoAPI
 	        place_id:
 	}
 	 */
-	[Route("/trigger/list/", "GET")]
+	[Route ("/trigger/list/", "GET")]
 	public class TriggerListRequest
 	{
 	}
 
-	[Route("/trigger/list/{placeId}", "GET")]
+	[Route ("/trigger/list/{placeId}", "GET")]
 	public class TriggerListByPlaceRequest
 	{
 		public ObjectId placeId { get; set; }
 	}
 
-	[Route("/trigger/create", "POST")]
+	[Route ("/trigger/create", "POST")]
 	public class TriggerCreateRequest
 	{
 		public ObjectId placeId { get; set; }
@@ -78,12 +78,12 @@ namespace GeoAPI
 		public int delay { get; set; }
 	}
 
-	[Route("/trigger/update/{Id}", "PUT")]
+	[Route ("/trigger/update/{Id}", "PUT")]
 	public class TriggerUpdateRequest
 	{
 		[BsonId]
-		[ApiMember(Name="Id", Description = "Place ID", 
-		           ParameterType = "path", DataType = "string", IsRequired = true)]
+		[ApiMember (Name = "Id", Description = "Place ID", 
+			ParameterType = "path", DataType = "string", IsRequired = true)]
 		public ObjectId Id { get; set; }
 
 		public ObjectId placeId { get; set; }
@@ -107,22 +107,22 @@ namespace GeoAPI
 		public int delay { get; set; }
 	}
 
-	[Route("/trigger/delete/{Id}", "DELETE")]
-	[Route("/trigger/info/{Id}", "GET")]
+	[Route ("/trigger/delete/{Id}", "DELETE")]
+	[Route ("/trigger/info/{Id}", "GET")]
 	public class TriggerRequest
 	{
 		[BsonId]
-		[ApiMember(Name="Id", Description = "Place ID", 
-		           ParameterType = "path", DataType = "string", IsRequired = true)]
+		[ApiMember (Name = "Id", Description = "Place ID", 
+			ParameterType = "path", DataType = "string", IsRequired = true)]
 		public ObjectId Id { get; set; }
 	}
 
-	[Route("/trigger/run/{Id}", "POST")]
+	[Route ("/trigger/run/{Id}", "POST")]
 	public class TriggerRunRequest
 	{
 		[BsonId]
-		[ApiMember(Name="Id", Description = "Trigger ID", 
-		           ParameterType = "path", DataType = "string", IsRequired = true)]
+		[ApiMember (Name = "Id", Description = "Trigger ID", 
+			ParameterType = "path", DataType = "string", IsRequired = true)]
 		public ObjectId Id { get; set; }
 		/*
 		[ApiMember(Name="device_platform", Description = "Device Platform", 
