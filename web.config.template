@@ -17,7 +17,9 @@
     <add key="ACSAPIToken" value="hJISWK8hhj1N0xREDAY4zgGvuNkMgVA3"></add>
     <add key="ACSBaseURL" value="https://api.cloud.appcelerator.com/v1/"></add>
     <add key="ACSUserName" value="bp4151@gmail.com"></add>    
-    <add key="ACSPassword" value="Test"></add>          	
+    <add key="ACSPassword" value="Test"></add> 
+    <!--"UserId", "DeviceToken"-->
+    <add key="PushIDType" value="DeviceToken"></add>
     -->
     <add key="APIToken" value="sKoj4kDemFDI0Pjl"></add>
     <add key="BaseURL" value="https://api.everlive.com/v1/"></add>
