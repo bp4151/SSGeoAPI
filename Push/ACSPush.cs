@@ -1,6 +1,11 @@
 using System;
-using RestSharp;
 using System.Linq;
+using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
+using RestSharp;
+using ServiceStack.Configuration;
+using ServiceStack.Text;
+using GeoAPI.Utility;
 
 namespace GeoAPI
 {
@@ -40,19 +45,34 @@ namespace GeoAPI
 
 			client.BaseUrl = BaseUrl;
 
+			Payload Payload = new Payload ();
+			Payload.alert = payload;
+			Payload.vibrate = true;
+			Payload.sound = "default";
+
+			payload = ServiceStack.Text.JsonSerializer.SerializeToString<Payload> (Payload);
+
 			var request = new RestRequest ();
 			request.Method = Method.POST;
 			request.AddHeader ("Content-Type", "application/json");
-			request.Resource = "push_notification/notify.json?key=" + this.APIToken;
+
+			//Options are "UserId", "DeviceToken"
+			if (filterType == "UserId") {
+				request.Resource = "push_notification/notify.json?key=" + this.APIToken;
+				request.AddParameter ("to_ids", to_ids);
+			} else if (filterType == "DeviceToken") {
+				request.Resource = "push_notification/notify_tokens.json?key=" + this.APIToken;
+				request.AddParameter ("to_tokens", to_ids);
+			}
+
 			request.AddUrlSegment ("key", this.APIToken);
 			request.AddCookie ("_session_id", SessionID);
-
 			request.AddParameter ("channel", channel);
-			request.AddParameter ("to_ids", to_ids);
+
 			request.AddParameter ("payload", payload);
 			IRestResponse response = client.Execute (request);
 
-			return response.StatusCode.ToString ();
+			return response.StatusDescription.ToString ();
 
 		}
 

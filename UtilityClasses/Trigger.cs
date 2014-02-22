@@ -19,7 +19,7 @@ namespace GeoAPI.Utility
 			string connectionString = appSettings.Get ("MongoDB", "");
 			string pushPlatform = appSettings.Get ("PushPlatform", "");
 			string channel = appSettings.Get ("Channel", "");
-
+			string pushIDType = appSettings.Get ("PushIDType", "");
 			MongoClient client = new MongoClient (connectionString);
 			MongoServer server = client.GetServer ();
 			MongoDatabase db = server.GetDatabase ("geoapi");
@@ -57,7 +57,7 @@ namespace GeoAPI.Utility
 						userlist = userlist.Substring (0, userlist.Length - 1);
 						for (int i = 0; i < triggersonplace.Count; i++) {
 							//plugin.Notify ("", userlist, triggersonplace [i].text);
-							pushfeature.Notify (channel, userlist, triggersonplace [i].text, "UserId", devicePlatform);
+							pushfeature.Notify (channel, userlist, triggersonplace [i].text, pushIDType, devicePlatform);
 						}
 					}
 

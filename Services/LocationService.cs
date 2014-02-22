@@ -88,11 +88,11 @@ namespace GeoAPI
 				//Create new location object and set variables for insert into location collection
 				Location location = new Location ();
 				location.user_id = request.user_id;
-				if (request.create_date == DateTime.MinValue) {
-					location.create_date = DateTime.Now;
-				} else {
-					location.create_date = request.create_date;
-				}
+				//if (request.create_date == DateTime.MinValue) {
+				location.create_date = DateTime.Now;
+				//} else {
+				//location.create_date = request.create_date;
+				//}
 				location.device_platform = request.device_platform;
 
 				location.loc = new GeoJson2DGeographicCoordinates (request.longitude, request.latitude);
@@ -173,7 +173,7 @@ namespace GeoAPI
 				switch (uom) {
 				case "METER":
 					{
-						earthRadius = 63710;
+						earthRadius = 6378100;
 						break;
 					}
 				case "KILOMETER":
@@ -207,6 +207,8 @@ namespace GeoAPI
 				placescollection.EnsureIndex (IndexKeys.GeoSpatialSpherical ("loc"));
 
 				foreach (var place in placescollection.FindAll ()) {
+
+					Console.WriteLine (place.name);
 
 					//Set the query to determine if the new location is in each place
 					float radius = (float)place.radius / (float)earthRadius;
