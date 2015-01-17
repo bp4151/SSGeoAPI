@@ -21,8 +21,6 @@ namespace GeoAPI
 
 		private string Password { get; set; }
 
-		RestClient client = new RestClient ();
-
 		public ACSPush (string BaseUrl, string APIToken, string UserName, string Password)
 		{
 			this.APIToken = APIToken;
@@ -42,8 +40,7 @@ namespace GeoAPI
 		public virtual string Notify (string channel, string to_ids, string payload, string filterType, string devicePlatform)
 		{
 			Login ();
-
-			client.BaseUrl = BaseUrl;
+			RestClient client = new RestClient (BaseUrl);
 
 			Payload Payload = new Payload ();
 			Payload.alert = payload;
@@ -79,7 +76,7 @@ namespace GeoAPI
 		private void Login ()
 		{
 
-			client.BaseUrl = BaseUrl;
+			RestClient client = new RestClient (BaseUrl);
 
 			var request = new RestRequest ();
 			request.Method = Method.POST;

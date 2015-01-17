@@ -13,11 +13,11 @@ using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.Admin;
 using ServiceStack.ServiceInterface.Cors;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
-using ServiceStack.Api.Swagger;
 
 namespace GeoAPI
 {
@@ -42,16 +42,17 @@ namespace GeoAPI
 				string userName = appSettings.GetString ("UserName") ?? "";
 				string password = appSettings.GetString ("Password") ?? "";
 
-				Plugins.Add (new SwaggerFeature ());
+				//Plugins.Add (new SwaggerFeature ());
 				Plugins.Add (new CorsFeature ("http://petstore.swagger.wordnik.com"));
 				Plugins.Add (new CorsFeature ("*", "GET, POST, PUT, DELETE, OPTIONS", "content-type", false));
+				//Plugins.Add (new RequestLogsFeature (){ RequiredRoles = new string[]{ } });
 
 				//Plugin for push removed in favor of IoC/DI
 				//Plugins.Add (new ACSPushFeature ());
 				//Plugins.Add (new EverlivePushFeature ());
 
 				//Use the string name when calling in the service to select which push feature to use
-				container.Register<IPush> ("EverlivePush", new EverlivePush (baseUrl, APIToken));
+				//container.Register<IPush> ("EverlivePush", new EverlivePush (baseUrl, APIToken));
 				container.Register<IPush> ("ACSPush", new ACSPush (baseUrl, APIToken, userName, password));
 
 				SetConfig (new EndpointHostConfig { 
@@ -87,6 +88,7 @@ namespace GeoAPI
 		protected void Application_Start (object sender, EventArgs e)
 		{
 			new AppHost ().Init ();
+
 		}
 
 		protected void Session_Start (Object sender, EventArgs e)

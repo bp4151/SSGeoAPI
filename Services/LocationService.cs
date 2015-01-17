@@ -32,28 +32,8 @@ namespace GeoAPI
 			client = new MongoClient (connectionString);
 			server = client.GetServer ();
 			db = server.GetDatabase ("geoapi");
-			//Get locations
-//			locationscollection = db.GetCollection<LocationRequest> ("location");
-//
-//			if (!BsonClassMap.IsClassMapRegistered (typeof(LocationRequest))) {
-//				BsonClassMap.RegisterClassMap<LocationRequest> ();
-//			}
-			locationscollection = db.GetCollection<Location> ("location");
 
-//			var cdkeys = IndexKeys.Descending ("create_date");
-//			var cdoptions = IndexOptions.SetName ("location.create_date");
-//
-//			locationscollection.CreateIndex (cdkeys, cdoptions);
-//
-//			var ukeys = IndexKeys.Ascending ("user_id");
-//			var uoptions = IndexOptions.SetName ("location.user_id");
-//
-//			locationscollection.CreateIndex (ukeys, uoptions);
-//
-//			var ikeys = IndexKeys.Ascending ("order_col");
-//			var ioptions = IndexOptions.SetName ("location.order_col");
-//
-//			locationscollection.CreateIndex (ikeys, ioptions);
+			locationscollection = db.GetCollection<Location> ("location");
 
 			var ikeys = IndexKeys.Ascending ("user_id", "order_col");
 			var ioptions = IndexOptions.SetName ("location.user_id_order_col");
@@ -88,11 +68,7 @@ namespace GeoAPI
 				//Create new location object and set variables for insert into location collection
 				Location location = new Location ();
 				location.user_id = request.user_id;
-				//if (request.create_date == DateTime.MinValue) {
 				location.create_date = DateTime.Now;
-				//} else {
-				//location.create_date = request.create_date;
-				//}
 				location.device_platform = request.device_platform;
 
 				location.loc = new GeoJson2DGeographicCoordinates (request.longitude, request.latitude);
@@ -123,13 +99,6 @@ namespace GeoAPI
 					               );
 
 					WriteConcernResult delresult = locationscollection.Remove (delquery);
-
-//					var entities = locationscollection.Find (delquery);
-//
-//					foreach (var entity in entities) {
-//						locationscollection.Remove (Query.EQ ("_id", entity.Id));
-//					}
-
 				}
 				//***************************************************************************************
 
@@ -204,7 +173,7 @@ namespace GeoAPI
 					BsonClassMap.RegisterClassMap<Location> ();
 				}
 
-				placescollection.EnsureIndex (IndexKeys.GeoSpatialSpherical ("loc"));
+				placescollection.CreateIndex (IndexKeys.GeoSpatialSpherical ("loc"));
 
 				foreach (var place in placescollection.FindAll ()) {
 
@@ -248,31 +217,32 @@ namespace GeoAPI
 						triggerResults.Add (place.name + ":NONE");
 					}
 
-				//if idxCurrentLocation = 0 and idxPriorLocation = -1 ENTER
-				else if (idxCurrentLocation == 0 && idxPriorLocation == -1) {
+					//if idxCurrentLocation = 0 and idxPriorLocation = -1 ENTER
+					else if (idxCurrentLocation == 0 && idxPriorLocation == -1) {
 						//If an enter trigger exists on the place, fire the trigger and add the user to the place
 						place.usersInPlace.AddIfNotExists (request.user_id);
 						placescollection.Save (place);
 						Console.WriteLine ("Execute ENTER trigger on place " + place.name);
-
-						Utility.Trigger.Run (this.GetAppHost (), this.appSettings, place.Id, place.usersInPlace, "ENTER", listlocs [0].device_platform);
+						//Utility.Trigger.Run (this.GetAppHost (), this.appSettings, place.Id, place.usersInPlace, "ENTER", listlocs [0].device_platform);
+						Utility.Trigger.Run (this.GetAppHost (), this.appSettings, place.Id, request.user_id, "ENTER", listlocs [0].device_platform);
 						triggerResults.Add (place.name + ":ENTER");
 					}
 
-				//if idxCurrentLocation = -1 and idxPriorLocation = 0 EXIT
-				else if (idxCurrentLocation == -1 && idxPriorLocation == 0) {
+					//if idxCurrentLocation = -1 and idxPriorLocation = 0 EXIT
+					else if (idxCurrentLocation == -1 && idxPriorLocation == 0) {
 						//If an exit trigger exists on the place, fire the trigger and remove the user to the place
 						place.usersInPlace.Remove (request.user_id);
 						placescollection.Save (place);
 						Console.WriteLine ("Execute EXIT trigger on place " + place.name);
 						List<string> userlist = new List<string> ();
 						userlist.Add (request.user_id);
-						Utility.Trigger.Run (this.GetAppHost (), this.appSettings, place.Id, place.usersInPlace, "EXIT", listlocs [0].device_platform);
+						//Utility.Trigger.Run (this.GetAppHost (), this.appSettings, place.Id, place.usersInPlace, "EXIT", listlocs [0].device_platform);
+						Utility.Trigger.Run (this.GetAppHost (), this.appSettings, place.Id, request.user_id, "EXIT", listlocs [0].device_platform);
 						triggerResults.Add (place.name + ":EXIT");
 					}
 
-				//if idxCurrentLocation = 0 and idxPriorLocation >= 0 STILL IN PLACE
-				else if (idxCurrentLocation == 0 && idxPriorLocation >= 0) {
+					//if idxCurrentLocation = 0 and idxPriorLocation >= 0 STILL IN PLACE
+					else if (idxCurrentLocation == 0 && idxPriorLocation >= 0) {
 						place.usersInPlace.AddIfNotExists (request.user_id);
 						placescollection.Save (place);
 						Console.WriteLine ("Still in place " + place.name);
@@ -285,59 +255,7 @@ namespace GeoAPI
 			} catch (Exception ex) {
 				throw ex;
 			}
-			
-
 		}
-		/*
-		/// moved to utility class Trigger so this can be called from multiple locations within code
-		void RunTrigger (ObjectId place_id, List<string> usersInPlace, string triggerType)
-		{
-
-			var appHost = this.GetAppHost ();
-
-			string connectionString = appSettings.Get ("MongoDB", "");
-			MongoClient client = new MongoClient (connectionString);
-			MongoServer server = client.GetServer ();
-			MongoDatabase db = server.GetDatabase ("geoapi");
-
-			MongoCollection<TriggerResponse> triggerscollection = db.GetCollection<TriggerResponse> ("trigger");
-
-			if (!BsonClassMap.IsClassMapRegistered (typeof(TriggerResponse))) {
-				BsonClassMap.RegisterClassMap<TriggerResponse> ();
-			}
-
-			List<TriggerResponse> triggersonplace = new List<TriggerResponse> ();
-
-			try {
-
-				//var plugin = (ACSPushFeature)appHost.Plugins.Find (x => x is ACSPushFeature);
-				var plugin = (EverlivePushFeature)appHost.Plugins.Find (x => x is EverlivePushFeature);
-
-				//Get all triggers for this place
-				var triggerquery = Query.And (
-					Query.EQ ("placeId", place_id),
-					Query.EQ ("type", triggerType)
-				);
-				triggersonplace = triggerscollection.Find (triggerquery).ToList ();
-
-				if (triggersonplace.Count > 0) {
-					StringBuilder sb = new StringBuilder ();
-					for (int i = 0; i < usersInPlace.Count; i++) {
-						sb.Append (usersInPlace [0] + ",");
-					}
-					string userlist = sb.ToString ();
-					userlist = userlist.Substring (0, userlist.Length - 1);
-
-					for (int i = 0; i < triggersonplace.Count; i++) {
-						plugin.Notify ("", userlist, triggersonplace [i].text);
-					}
-				}
-
-			} catch (Exception ex) {
-				throw ex;
-			}
-		}
-		*/
 	}
 }
 

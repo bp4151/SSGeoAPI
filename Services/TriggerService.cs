@@ -171,18 +171,13 @@ namespace GeoAPI
 			response.type = request.type;
 
 			var update = Update.Replace (response);
-//			var update = Update
-//				.Set ("placeId", request.placeId)
-//				.Set ("dateFrom", request.dateFrom)
-//				.Set ("dateTo", request.dateTo)
-//				.Set ("delay", request.delay)
-//		      	.SetWrapped ("extra", request.extra)
-//				.Set ("perUserRunCount", request.perUserRunCount)
-//				.Set ("text", request.text)
-//				.Set ("timeFrom", request.timeFrom)
-//				.Set ("timeTo", request.timeTo)
-//				.Set ("type", request.type);
-			FindAndModifyResult result = triggerscollection.FindAndModify (query, SortBy.Null, update, true);
+			FindAndModifyArgs triggerArgs = new FindAndModifyArgs ();
+			triggerArgs.Query = query;
+			triggerArgs.SortBy = SortBy.Null;
+			triggerArgs.Update = update;
+			triggerArgs.VersionReturned = FindAndModifyDocumentVersion.Modified;
+
+			FindAndModifyResult result = triggerscollection.FindAndModify (triggerArgs);
 
 			response.ResponseStatus = new ResponseStatus ();
 
@@ -204,7 +199,10 @@ namespace GeoAPI
 
 			var query = Query.EQ ("_id", request.Id);
 
-			FindAndModifyResult result = triggerscollection.FindAndRemove (query, SortBy.Null);
+			FindAndRemoveArgs triggerArgs = new FindAndRemoveArgs ();
+			triggerArgs.Query = query;
+			triggerArgs.SortBy = SortBy.Null;
+			FindAndModifyResult result = triggerscollection.FindAndRemove (triggerArgs);
 
 			response.ResponseStatus = new ResponseStatus ();
 

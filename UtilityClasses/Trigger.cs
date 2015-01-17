@@ -69,6 +69,53 @@ namespace GeoAPI.Utility
 				throw ex;
 			}
 		}
+
+		public static bool Run (IAppHost appHost, AppSettings appSettings, ObjectId place_id, string userID, string triggerType, string devicePlatform)
+		{
+
+			string connectionString = appSettings.Get ("MongoDB", "");
+			string pushPlatform = appSettings.Get ("PushPlatform", "");
+			string channel = appSettings.Get ("Channel", "");
+			string pushIDType = appSettings.Get ("PushIDType", "");
+			MongoClient client = new MongoClient (connectionString);
+			MongoServer server = client.GetServer ();
+			MongoDatabase db = server.GetDatabase ("geoapi");
+
+			MongoCollection<GeoAPI.Trigger> triggerscollection = db.GetCollection<GeoAPI.Trigger> ("trigger");
+
+			if (!BsonClassMap.IsClassMapRegistered (typeof(GeoAPI.Trigger))) {
+				BsonClassMap.RegisterClassMap<GeoAPI.Trigger> ();
+			}
+
+			List<GeoAPI.Trigger> triggersonplace = new List<GeoAPI.Trigger> ();
+
+			try {
+
+				//no longer using plugins for push. Using repository pattern instead.
+				//var plugin = (ACSPushFeature)appHost.Plugins.Find (x => x is ACSPushFeature);
+				//var plugin = (EverlivePushFeature)appHost.Plugins.Find (x => x is EverlivePushFeature);
+
+				var pushfeature = appHost.GetContainer ().ResolveNamed<IPush> (pushPlatform);			
+
+				//Get all triggers for this place
+				var triggerquery = Query.And (
+					                   Query.EQ ("placeId", place_id),
+					                   Query.EQ ("type", triggerType)
+				                   );
+				triggersonplace = triggerscollection.Find (triggerquery).ToList ();
+
+				if (triggersonplace.Count > 0) {
+					for (int i = 0; i < triggersonplace.Count; i++) {
+						//plugin.Notify ("", userlist, triggersonplace [i].text);
+						pushfeature.Notify (channel, userID, triggersonplace [i].text, pushIDType, devicePlatform);
+					}
+				}
+				return true;
+
+			} catch (Exception ex) {
+				throw ex;
+			}
+		}
 	}
 }
 

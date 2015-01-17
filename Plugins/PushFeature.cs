@@ -5,117 +5,9 @@ using ServiceStack.Configuration;
 using ServiceStack.Common.Web;
 using System.Linq;
 using System.Collections.Generic;
-using Telerik.Everlive.Sdk.Core;
-using Telerik.Everlive.Sdk.Core.Model.System.Push;
 
 namespace GeoAPI
 {
-	public class EverlivePushFeature : IPlugin
-	{
-		/*
-		 * "Filter": "{\"$or\":[{\"Id\":\"deviece id 1\"},{\"Id\":\"device id 2\"}]}"
-		 */
-		private string ELAPIToken { get; set; }
-
-		private string ELBaseUrl { get; set; }
-
-		private string ELSessionID { get; set; }
-
-		private string ELUserName { get; set; }
-
-		private string ELPassword { get; set; }
-
-		public EverlivePushFeature ()
-		{
-
-		}
-
-		public void Register (IAppHost appHost)
-		{
-
-			var appSettings = new AppSettings ();
-
-			this.ELAPIToken = appSettings.GetString ("ELAPIToken");
-			this.ELBaseUrl = appSettings.GetString ("ELBaseUrl");
-
-		}
-
-		/// <summary>
-		/// 
-		/// var notification = {
-		///		"Filter": "{\"PlatformType\": 1}",
-		///		"Message": "A generic message"
-		///	};
-		///
-		/// "Filter": "{\"PlatformType\": 1}" // filter by platform
-		/// "Filter": "{\"$or\":[{\"PushToken\":\"pushtoken\"},{\"PushToken\":\"pushtoken\"}]}" // targets specific devices
-		///	"Filter": "{\"Parameters.MyIntValue\":2}" // filter by custom parameter 
-		/// 
-		/// $.ajax({
-		///		type: "POST",
-		///		url: 'https://api.everlive.com/v1/[apikey]/Push/Notifications',
-		///		contentType: "application/json",
-		///		data: JSON.stringify(notification),
-		///		success: function(data){
-		///			alert(JSON.stringify(data));
-		///		},
-		///		error: function(error){
-		///			alert(JSON.stringify(error));
-		///		}
-		///	});
-		/// 
-		/// </summary>
-		/// <param name="to_ids">To_ids.</param>
-		/// <param name="payload">Payload.</param>
-		public virtual string Notify (string channel, string to_ids, string payload)
-		{
-			IRestResponse response = null;
-			try {
-
-				char[] splitParam = { ',' };
-				string[] toids = to_ids.Split (splitParam);
-
-				string Filter = "";
-
-				if (toids.Length > 0) {
-					Filter = "{\"$or\":[";
-					for (var i = 0; i < toids.Length; i++) {
-						Filter = Filter + "{ \"PushToken\":\"" + toids [i] + "\"},";
-					}
-					Filter = Filter.Substring(0, Filter.Length - 1);
-					Filter = Filter + "]}";
-				}
-
-				//string notification = "{ 'Filter': " + Filter + ", 'Message': '" + payload + "'}";
-
-				EverliveApp elApp = new EverliveApp(ELAPIToken);
-				var notification = new PushNotification(payload);
-				notification.Filter = Filter;
-				elApp.WorkWith().Push().Notifications().Create(notification).ExecuteSync();
-				/*
-				var client = new RestClient ();
-				client.BaseUrl = ELBaseUrl;
-
-				var request = new RestRequest ();
-				request.Method = Method.POST;
-				request.RequestFormat = RestSharp.DataFormat.Json;
-				request.Resource = this.ELAPIToken + "/Push/Notifications";
-				//request.AddParameter ("data", notification);
-				request.AddBody(notification);
-				response = client.Execute (request);
-				*/
-				return "200";
-			}
-			catch(Exception ex)
-			{
-				response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
-				response.StatusDescription = ex.Message;
-				return response.StatusCode.ToString();
-
-			}
-		}
-	}
-
 	public class ACSPushFeature : IPlugin
 	{
 		private string ACSAPIToken { get; set; }
@@ -148,8 +40,7 @@ namespace GeoAPI
 
 		public virtual string Notify (string channel, string to_ids, string payload)
 		{
-			var client = new RestClient ();
-			client.BaseUrl = ACSBaseUrl;
+			var client = new RestClient (ACSBaseUrl);
 
 			var request = new RestRequest ();
 			request.Method = Method.POST;
@@ -167,8 +58,7 @@ namespace GeoAPI
 
 		private void Login ()
 		{
-			var client = new RestClient ();
-			client.BaseUrl = ACSBaseUrl;
+			var client = new RestClient (ACSBaseUrl);
 
 			var request = new RestRequest ();
 			request.Method = Method.POST;

@@ -46,13 +46,14 @@ namespace GeoAPI
 		public PlaceListResponse Get (PlaceListRequest request)
 		{
 			PlaceListResponse response = new PlaceListResponse ();
+			response.responseStatus = new ResponseStatus ();
 
 			response.places = new List<Place> ();
 			var places = placescollection.FindAll ();
 
 			try {
 				foreach (var place in places) {
-					Console.WriteLine (JsonSerializer.SerializeToString (place));
+					//Console.WriteLine (JsonSerializer.SerializeToString (place));
 					Place _place = new Place ();
 					_place.usersInPlace = new List<string> ();
 
@@ -65,13 +66,16 @@ namespace GeoAPI
 
 					response.places.Add (_place);
 				}
+				response.responseStatus.ErrorCode = "200";
+				response.responseStatus.Message = "SUCCESS";
+
 			} catch (Exception ex) {
-				Console.WriteLine (ex.Message);
+				response.responseStatus.ErrorCode = "500";
+				response.responseStatus.Message = ex.Message;
+				response.responseStatus.StackTrace = ex.StackTrace;
 			}
 
-			response.responseStatus = new ResponseStatus ();
-			response.responseStatus.ErrorCode = "200";
-			response.responseStatus.Message = "SUCCESS";
+
 			return response;
 		
 		}
@@ -166,7 +170,15 @@ namespace GeoAPI
 
 			var query = Query.EQ ("_id", request.Id);
 			var update = Update.Replace (place);
-			FindAndModifyResult result = placescollection.FindAndModify (query, SortBy.Null, update);
+
+			FindAndModifyArgs args = new FindAndModifyArgs {
+				Query = query,
+				SortBy = SortBy.Null,
+				Update = update
+			};
+
+			//FindAndModifyResult result = placescollection.FindAndModify (query, SortBy.Null, update);
+			FindAndModifyResult result = placescollection.FindAndModify (args);
 
 			response.Id = request.Id;
 			response.loc = loc;
@@ -194,19 +206,22 @@ namespace GeoAPI
 			PlaceDeleteResponse response = new PlaceDeleteResponse ();
 
 			///Remove triggers on this place before deleting the place!
-			/// 
-			///
 
-			var query2 = Query.EQ ("placeId", request.Id);
-			FindAndModifyResult result2 = triggerscollection.FindAndRemove (query2, SortBy.Null);
+			var triggerQuery = Query.EQ ("placeId", request.Id);
+			FindAndRemoveArgs triggerArgs = new FindAndRemoveArgs ();
+			triggerArgs.Query = triggerQuery;
+			triggerArgs.SortBy = SortBy.Null;
+			FindAndModifyResult triggerResult = triggerscollection.FindAndRemove (triggerArgs);
 			 
-			var query1 = Query.EQ ("_id", request.Id);
-			//Place place = placescollection.FindOne (query1);
-			FindAndModifyResult result1 = placescollection.FindAndRemove (query1, SortBy.Null);
+			var placeQuery = Query.EQ ("_id", request.Id);
+			FindAndRemoveArgs placeArgs = new FindAndRemoveArgs ();
+			placeArgs.Query = placeQuery;
+			placeArgs.SortBy = SortBy.Null;
+			FindAndModifyResult placeResult = placescollection.FindAndRemove (placeArgs);
 
 			response.ResponseStatus = new ResponseStatus ();
 
-			if (result1.Ok && result2.Ok) {
+			if (placeResult.Ok && triggerResult.Ok) {
 				response.ResponseStatus.ErrorCode = "200";
 				response.ResponseStatus.Message = "SUCCESS";
 			} else {
